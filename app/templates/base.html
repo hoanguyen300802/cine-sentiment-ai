@@ -63,15 +63,23 @@
         <!-- Application Footer -->
         <footer class="app-footer">
             <div class="footer-content">
-                <p>&copy; 2026 <strong>{{ t.app_name }}</strong>. {{ t.footer_rights }}</p>
-                <p>
-                    {{ t.footer_powered }} 
-                    <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="tmdb-link">
-                        <i class="fa-solid fa-film"></i> The Movie Database (TMDb)
-                    </a>
-                </p>
-                <p style="font-size: 0.75rem; color: var(--text-muted); max-width: 620px; line-height: 1.4; margin-top: 0.3rem;">
-                    This product uses the TMDB API but is not endorsed or certified by TMDB.
+                <p>&copy; 2026 <strong>{{ t.app_name }}</strong> &bull; {{ t.footer_rights }}</p>
+                <div class="footer-compliance-row">
+                    <span class="compliance-badge">
+                        <i class="fa-solid fa-film" style="color: var(--accent-cyan);"></i>
+                        {{ t.footer_powered }} 
+                        <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="tmdb-link">
+                            The Movie Database (TMDb)
+                        </a>
+                    </span>
+                    <span class="compliance-divider">&bull;</span>
+                    <span class="compliance-badge">
+                        <i class="fa-solid fa-brain" style="color: #a855f7;"></i>
+                        AI NLP: <strong>TextBlob</strong> &amp; <strong>NLTK VADER</strong>
+                    </span>
+                </div>
+                <p class="footer-disclaimer-text">
+                    This educational application uses the TMDb API but is not endorsed or certified by TMDb. All movie posters, imagery, and trailers are property of their respective copyright owners and studios.
                 </p>
             </div>
         </footer>

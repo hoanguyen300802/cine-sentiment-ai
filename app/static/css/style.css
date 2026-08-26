@@ -1261,6 +1261,36 @@ button, input, textarea, select {
   gap: 0.5rem;
 }
 
+.footer-compliance-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  margin: 0.35rem 0;
+}
+
+.compliance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+}
+
+.compliance-divider {
+  color: var(--border-glow);
+}
+
+.footer-disclaimer-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  max-width: 680px;
+  line-height: 1.5;
+  margin-top: 0.4rem;
+  opacity: 0.85;
+}
+
 .tmdb-link {
   color: var(--accent-cyan);
   font-weight: 600;
