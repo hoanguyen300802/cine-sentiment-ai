@@ -1,6 +1,6 @@
 """
 Multi-language Translation Module
-Supports 8 global languages with fully localized UI strings and diverse sample reviews.
+Supports 8 global languages with fully synchronized UI strings, navigation, and sample reviews.
 """
 
 SUPPORTED_LANGUAGES = {
@@ -18,12 +18,12 @@ DEFAULT_LANGUAGE = 'en'
 
 TRANSLATIONS = {
     'en': {
-        'nav_more': '더보기',
-        'nav_awards': '시상식',
-        'nav_people': '인물',
-        'nav_tv_shows': 'TV 프로그램',
-        'nav_movies': '영화',
-        'nav_home': '홈',
+        'nav_home': 'Home',
+        'nav_movies': 'Movies',
+        'nav_tv_shows': 'TV Shows',
+        'nav_people': 'Popular People',
+        'nav_awards': 'Awards',
+        'nav_more': 'More',
         'nav_genres': 'Genres',
         'nav_trending': 'Trending',
         'nav_sentiment': 'Sentiment AI',
@@ -100,7 +100,12 @@ TRANSLATIONS = {
         'footer_powered': 'Powered by',
     },
     'vi': {
-        'nav_home': '홈',
+        'nav_home': 'Trang Chủ',
+        'nav_movies': 'Phim Điện Ảnh',
+        'nav_tv_shows': 'Phim Truyền Hình',
+        'nav_people': 'Diễn Viên & Đạo Diễn',
+        'nav_awards': 'Giải Thưởng',
+        'nav_more': 'Thêm',
         'nav_genres': 'Thể Loại',
         'nav_trending': 'Thịnh Hành',
         'nav_sentiment': 'Phân Tích Cảm Xúc',
@@ -177,7 +182,12 @@ TRANSLATIONS = {
         'footer_powered': 'Được hỗ trợ bởi',
     },
     'zh': {
-        'nav_home': '홈',
+        'nav_home': '首页',
+        'nav_movies': '电影',
+        'nav_tv_shows': '电视剧',
+        'nav_people': '演职人员',
+        'nav_awards': '奖项',
+        'nav_more': '更多',
         'nav_genres': '电影类型',
         'nav_trending': '热门趋势',
         'nav_sentiment': '影评分析',
@@ -254,7 +264,12 @@ TRANSLATIONS = {
         'footer_powered': '数据来源',
     },
     'es': {
-        'nav_home': '홈',
+        'nav_home': 'Inicio',
+        'nav_movies': 'Películas',
+        'nav_tv_shows': 'Series TV',
+        'nav_people': 'Celebridades',
+        'nav_awards': 'Premios',
+        'nav_more': 'Más',
         'nav_genres': 'Géneros',
         'nav_trending': 'Tendencias',
         'nav_sentiment': 'Análisis IA',
@@ -331,7 +346,12 @@ TRANSLATIONS = {
         'footer_powered': 'Desarrollado con',
     },
     'fr': {
-        'nav_home': '홈',
+        'nav_home': 'Accueil',
+        'nav_movies': 'Films',
+        'nav_tv_shows': 'Séries TV',
+        'nav_people': 'Célébrités',
+        'nav_awards': 'Récompenses',
+        'nav_more': 'Plus',
         'nav_genres': 'Genres',
         'nav_trending': 'Tendances',
         'nav_sentiment': 'Analyse IA',
@@ -408,7 +428,12 @@ TRANSLATIONS = {
         'footer_powered': 'Propulsé par',
     },
     'ja': {
-        'nav_home': '홈',
+        'nav_home': 'ホーム',
+        'nav_movies': '映画',
+        'nav_tv_shows': 'テレビ番組',
+        'nav_people': '俳優・監督',
+        'nav_awards': '受賞歴',
+        'nav_more': 'その他',
         'nav_genres': 'ジャンル',
         'nav_trending': 'トレンド',
         'nav_sentiment': '感情分析AI',
@@ -485,7 +510,12 @@ TRANSLATIONS = {
         'footer_powered': 'データ提供',
     },
     'de': {
-        'nav_home': '홈',
+        'nav_home': 'Startseite',
+        'nav_movies': 'Filme',
+        'nav_tv_shows': 'Serien',
+        'nav_people': 'Personen',
+        'nav_awards': 'Auszeichnungen',
+        'nav_more': 'Mehr',
         'nav_genres': 'Genres',
         'nav_trending': 'Trends',
         'nav_sentiment': 'Sentiment-KI',
@@ -563,6 +593,11 @@ TRANSLATIONS = {
     },
     'ko': {
         'nav_home': '홈',
+        'nav_movies': '영화',
+        'nav_tv_shows': 'TV 프로그램',
+        'nav_people': '인물',
+        'nav_awards': '시상식',
+        'nav_more': '더보기',
         'nav_genres': '장르',
         'nav_trending': '인기 트렌드',
         'nav_sentiment': '감성 분석 AI',
