@@ -18,6 +18,10 @@ DEFAULT_LANGUAGE = 'en'
 
 TRANSLATIONS = {
     'en': {
+        'nav_home': 'Home',
+        'nav_genres': 'Genres',
+        'nav_trending': 'Trending',
+        'nav_sentiment': 'Sentiment AI',
         'app_name': 'CineSentiment AI',
         'tagline': 'Smart Movie Discovery & Sentiment Intelligence',
         'subtitle': 'Discover movie details, cast, trailers, and genre catalogs with multi-language AI sentiment analysis.',
@@ -91,6 +95,10 @@ TRANSLATIONS = {
         'footer_powered': 'Powered by',
     },
     'vi': {
+        'nav_home': 'Trang Chủ',
+        'nav_genres': 'Thể Loại',
+        'nav_trending': 'Thịnh Hành',
+        'nav_sentiment': 'Phân Tích Cảm Xúc',
         'app_name': 'CineSentiment AI',
         'tagline': 'Khám Phá Phim & Phân Tích Cảm Xúc Đa Ngôn Ngữ',
         'subtitle': 'Khám phá danh sách phim theo thể loại, từ khóa, diễn viên, trailer và phân tích cảm xúc khán giả bằng AI.',
@@ -164,6 +172,10 @@ TRANSLATIONS = {
         'footer_powered': 'Được hỗ trợ bởi',
     },
     'zh': {
+        'nav_home': '首页',
+        'nav_genres': '电影类型',
+        'nav_trending': '热门趋势',
+        'nav_sentiment': '影评分析',
         'app_name': 'CineSentiment AI',
         'tagline': '智能电影探索与多语言情感分析平台',
         'subtitle': '按关键词与类型搜索电影列表，探索演员阵容与预告片，并运用 NLP AI 深度分析观众影评。',
@@ -237,6 +249,10 @@ TRANSLATIONS = {
         'footer_powered': '数据来源',
     },
     'es': {
+        'nav_home': 'Inicio',
+        'nav_genres': 'Géneros',
+        'nav_trending': 'Tendencias',
+        'nav_sentiment': 'Análisis IA',
         'app_name': 'CineSentiment AI',
         'tagline': 'Descubrimiento de Películas y Análisis de Sentimientos Multilingüe',
         'subtitle': 'Busca listas de películas por palabra clave y género con análisis de reseñas en cualquier idioma.',
@@ -310,6 +326,10 @@ TRANSLATIONS = {
         'footer_powered': 'Desarrollado con',
     },
     'fr': {
+        'nav_home': 'Accueil',
+        'nav_genres': 'Genres',
+        'nav_trending': 'Tendances',
+        'nav_sentiment': 'Analyse IA',
         'app_name': 'CineSentiment AI',
         'tagline': 'Découverte de Films & Analyse Multilingue des Sentiments',
         'subtitle': 'Explorez les listes de films par mot-clé et genre avec analyse des critiques par IA.',
@@ -383,6 +403,10 @@ TRANSLATIONS = {
         'footer_powered': 'Propulsé par',
     },
     'ja': {
+        'nav_home': 'ホーム',
+        'nav_genres': 'ジャンル',
+        'nav_trending': 'トレンド',
+        'nav_sentiment': '感情分析AI',
         'app_name': 'CineSentiment AI',
         'tagline': '映画検索・ジャンル一覧・キャスト＆多言語感情分析AI',
         'subtitle': 'キーワードやジャンルから映画一覧を検索し、出演者、公式予告編、多言語レビュー感情を瞬時に分析します。',
@@ -456,6 +480,10 @@ TRANSLATIONS = {
         'footer_powered': 'データ提供',
     },
     'de': {
+        'nav_home': 'Startseite',
+        'nav_genres': 'Genres',
+        'nav_trending': 'Trends',
+        'nav_sentiment': 'Sentiment-KI',
         'app_name': 'CineSentiment AI',
         'tagline': 'Filme, Genres, Besetzung & Mehrsprachige Sentiment-KI',
         'subtitle': 'Durchsuchen Sie Filmlisten nach Stichwort und Genre mit KI-gestützter Stimmungsanalyse.',
@@ -529,6 +557,10 @@ TRANSLATIONS = {
         'footer_powered': 'Unterstützt von',
     },
     'ko': {
+        'nav_home': '홈',
+        'nav_genres': '장르',
+        'nav_trending': '인기 트렌드',
+        'nav_sentiment': '감성 분석 AI',
         'app_name': 'CineSentiment AI',
         'tagline': '영화 검색, 장르 카탈로그 & 다국어 감성 분석 AI',
         'subtitle': '키워드와 장르별로 영화 목록을 탐색하고 출연진, 공식 예고편, 다국어 관람평 감정 성향을 실시간 분석합니다.',

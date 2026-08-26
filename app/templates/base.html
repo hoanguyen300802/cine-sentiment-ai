@@ -29,6 +29,26 @@
                     <span class="brand-badge">AI 2.0</span>
                 </a>
 
+                <!-- Middle Navigation Menu -->
+                <nav class="nav-menu-links">
+                    <a href="{{ url_for('index') }}" class="nav-menu-link">
+                        <i class="fa-solid fa-house"></i>
+                        <span>{{ t.nav_home }}</span>
+                    </a>
+                    <a href="{{ url_for('index') }}#genres-section" class="nav-menu-link">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span>{{ t.nav_genres }}</span>
+                    </a>
+                    <a href="{{ url_for('index') }}#trending-section" class="nav-menu-link">
+                        <i class="fa-solid fa-fire"></i>
+                        <span>{{ t.nav_trending }}</span>
+                    </a>
+                    <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="nav-menu-link nav-tmdb-link" title="The Movie Database">
+                        <i class="fa-solid fa-film"></i>
+                        <span>TMDb</span>
+                    </a>
+                </nav>
+
                 <div class="nav-actions">
                     <!-- Multi-Language Selector Dropdown -->
                     <div class="lang-dropdown" id="language-picker">
