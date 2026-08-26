@@ -1,6 +1,8 @@
 """
 Application Route Handlers
-Implements multi-language routing, TMDb search listing, genre filtering, movie details, and sentiment AI endpoints.
+Implements multi-language routing, TMDb search listing, genre filtering,
+movie categories (popular, now_playing, upcoming, top_rated), popular people,
+awards hall of fame, movie details, and sentiment AI endpoints.
 """
 
 from flask import render_template, request, redirect, url_for, session, jsonify
@@ -9,7 +11,9 @@ from app.api_config import (
     search_movies,
     get_genres,
     get_movies_by_genre,
+    get_movies_by_category,
     get_popular_movies,
+    get_popular_people,
     get_movie_details_by_id,
     get_movie_info
 )
@@ -62,10 +66,64 @@ def index():
     return render_template('index.html', genres=genres, popular_movies=popular_movies)
 
 
+@app.route('/movies/<category>')
+def movie_category(category):
+    """
+    Renders movies by category: popular, now_playing, upcoming, top_rated.
+    """
+    current_lang = session.get('lang', DEFAULT_LANGUAGE)
+    tmdb_lang = get_tmdb_language(current_lang)
+    t = get_translations(current_lang)
+
+    category_titles = {
+        'popular': t.get('nav_popular_movies', 'Popular Movies'),
+        'now_playing': t.get('nav_now_playing', 'Now Playing in Theaters'),
+        'upcoming': t.get('nav_upcoming', 'Upcoming Movies'),
+        'top_rated': t.get('nav_top_rated', 'Top Rated Masterpieces'),
+    }
+
+    title = category_titles.get(category, t.get('nav_movies', 'Movies'))
+    movies = get_movies_by_category(category, language=tmdb_lang)
+
+    return render_template(
+        'search_results.html',
+        movies=movies,
+        search_query=title,
+        result_title=title,
+        is_genre=False
+    )
+
+
+@app.route('/people')
+def people():
+    """
+    Displays the Popular People (Actors, Directors, Celebrities) page.
+    """
+    current_lang = session.get('lang', DEFAULT_LANGUAGE)
+    tmdb_lang = get_tmdb_language(current_lang)
+
+    people_list = get_popular_people(language=tmdb_lang)
+
+    return render_template('people.html', people=people_list)
+
+
+@app.route('/awards')
+def awards():
+    """
+    Displays the Awards & Masterpieces Hall of Fame page.
+    """
+    current_lang = session.get('lang', DEFAULT_LANGUAGE)
+    tmdb_lang = get_tmdb_language(current_lang)
+
+    top_movies = get_movies_by_category('top_rated', language=tmdb_lang)
+
+    return render_template('awards.html', movies=top_movies)
+
+
 @app.route('/search', methods=['GET', 'POST'])
 def search():
     """
-    Searches TMDb and returns a LIST of matching movies.
+    Searches TMDb and returns a list of matching movies.
     """
     if request.method == 'POST':
         query = request.form.get('movie_name', '').strip()
@@ -83,7 +141,6 @@ def search():
     if not movies:
         return render_template('error.html', error_type='not_found', query=query)
 
-    # Render the search results list page
     return render_template(
         'search_results.html',
         movies=movies,
@@ -141,17 +198,22 @@ def movie_detail(movie_id):
 def analyze_review():
     """
     AJAX / Form endpoint for real-time sentiment analysis.
+    Robustly handles all parameter formats (review, review_text, user_review).
     """
     if request.is_json:
-        data = request.get_json()
-        review_text = data.get('review_text', '')
+        data = request.get_json() or {}
+        review_text = data.get('review_text') or data.get('review') or data.get('user_review', '')
     else:
-        review_text = request.form.get('review_text', '')
+        review_text = request.form.get('review_text') or request.form.get('user_review') or request.form.get('review', '')
 
     result = analyze_sentiment(review_text)
 
     if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify(result)
+        return jsonify({
+            'success': True,
+            'data': result,
+            **result
+        })
 
     movie_id = request.form.get('movie_id')
     if movie_id:

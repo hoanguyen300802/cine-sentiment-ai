@@ -233,31 +233,44 @@ button, input, textarea, select {
   background: var(--bg-surface-hover);
 }
 
-/* More Dropdown */
-.nav-more-dropdown {
+.nav-github-link {
+  color: var(--text-secondary);
+}
+
+.nav-github-link:hover {
+  color: #a855f7;
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.nav-github-link i {
+  font-size: 1.1rem;
+}
+
+/* Nav Dropdown Wrapper (Movies, etc.) */
+.nav-dropdown-wrapper {
   position: relative;
 }
 
-.nav-more-btn {
+.nav-dropdown-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
 }
 
-.nav-more-icon {
+.nav-chevron-icon {
   font-size: 0.7rem;
   transition: transform var(--transition-fast);
 }
 
-.nav-more-dropdown:hover .nav-more-icon {
+.nav-dropdown-wrapper:hover .nav-chevron-icon {
   transform: rotate(180deg);
 }
 
-.nav-more-menu {
+.nav-dropdown-menu {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  min-width: 210px;
+  min-width: 190px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -273,10 +286,34 @@ button, input, textarea, select {
   gap: 0.2rem;
 }
 
-.nav-more-dropdown:hover .nav-more-menu {
+.nav-dropdown-wrapper:hover .nav-dropdown-menu {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
+}
+
+.dropdown-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.dropdown-nav-item:hover {
+  background: var(--bg-surface-hover);
+  color: var(--accent-cyan);
+}
+
+.dropdown-nav-item i {
+  width: 16px;
+  text-align: center;
+  color: var(--accent-cyan);
 }
 
 .more-item {
@@ -1826,6 +1863,223 @@ button, input, textarea, select {
 
 .card-view-btn:hover i {
   transform: translateX(4px);
+}
+
+/* =========================================================
+   8. Popular People & Awards Styles
+   ========================================================= */
+
+/* People Grid */
+.people-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 4rem;
+}
+
+.person-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.person-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: var(--shadow-md);
+}
+
+.person-avatar-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+.person-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-normal);
+}
+
+.person-card:hover .person-avatar-img {
+  transform: scale(1.05);
+}
+
+.person-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: var(--text-muted);
+}
+
+.person-popularity-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(236, 72, 153, 0.4);
+  color: #f472b6;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.person-info-content {
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.person-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+}
+
+.person-dept-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.person-known-for {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  line-height: 1.4;
+  flex-grow: 1;
+}
+
+.known-for-label {
+  font-weight: 600;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.known-for-list {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.person-view-tmdb-btn {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.85rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.person-view-tmdb-btn:hover {
+  background: var(--bg-surface-hover);
+  color: var(--accent-cyan);
+  border-color: var(--accent-cyan);
+}
+
+/* Awards Special Highlights */
+.awards-tag {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.award-card-highlight {
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.award-card-highlight:hover {
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15);
+}
+
+.award-rating-badge {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+/* Enhanced Light Theme Visibility */
+[data-theme="light"] .person-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .movie-catalog-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .person-name {
+  color: #0f172a;
+}
+
+[data-theme="light"] .card-movie-title {
+  color: #0f172a;
+}
+
+[data-theme="light"] .card-movie-overview {
+  color: #334155;
+}
+
+[data-theme="light"] .person-known-for {
+  color: #475569;
+}
+
+[data-theme="light"] .results-count-text {
+  color: #475569;
+}
+
+[data-theme="light"] .sentiment-desc {
+  color: #334155;
+}
+
+[data-theme="light"] .sample-title {
+  color: #334155;
+}
+
+[data-theme="light"] .card-view-btn {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+[data-theme="light"] .card-view-btn:hover {
+  background: var(--accent-gradient);
+  color: #ffffff;
+  border-color: transparent;
 }
 
 @media (max-width: 820px) {

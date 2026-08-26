@@ -1,6 +1,7 @@
 """
 TMDb API Service Client
-Handles movie search, genre exploration, detailed metadata, cast & crew credits, and video trailers.
+Handles movie search, genre exploration, movie categories (popular, now_playing, upcoming, top_rated),
+popular people, detailed metadata, cast & crew credits, and video trailers.
 """
 
 import os
@@ -75,6 +76,49 @@ def search_movies(query, language='en-US'):
         return []
 
 
+def get_movies_by_category(category='popular', language='en-US', page=1):
+    """
+    Fetch movies by category: popular, now_playing, upcoming, top_rated.
+    """
+    valid_categories = ['popular', 'now_playing', 'upcoming', 'top_rated']
+    if category not in valid_categories:
+        category = 'popular'
+
+    api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
+    url = f'{BASE_URL}/movie/{category}'
+    params = {
+        'api_key': api_key,
+        'language': language,
+        'page': page
+    }
+
+    try:
+        resp = requests.get(url, params=params, timeout=8)
+        if resp.status_code != 200:
+            return []
+
+        raw_results = resp.json().get('results', [])
+        movies = []
+        for m in raw_results:
+            poster_path = m.get('poster_path')
+            backdrop_path = m.get('backdrop_path')
+            movies.append({
+                'id': m.get('id'),
+                'title': m.get('title') or m.get('original_title', 'Unknown'),
+                'overview': m.get('overview') or 'No overview available.',
+                'release_date': m.get('release_date') or 'N/A',
+                'year': (m.get('release_date') or '')[:4] or 'N/A',
+                'rating': round(m.get('vote_average', 0.0), 1),
+                'vote_count': m.get('vote_count', 0),
+                'popularity': round(m.get('popularity', 0.0), 1),
+                'poster_url': f'{IMAGE_BASE_URL}{poster_path}' if poster_path else None,
+                'backdrop_url': f'{BACKDROP_BASE_URL}{backdrop_path}' if backdrop_path else None,
+            })
+        return movies
+    except Exception:
+        return []
+
+
 def get_movies_by_genre(genre_id, language='en-US', page=1):
     """Fetch top movies filtered by a specific genre ID."""
     api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
@@ -117,8 +161,15 @@ def get_movies_by_genre(genre_id, language='en-US', page=1):
 
 def get_popular_movies(language='en-US', page=1):
     """Fetch currently trending and popular movies for the home page."""
+    return get_movies_by_category('popular', language=language, page=page)[:12]
+
+
+def get_popular_people(language='en-US', page=1):
+    """
+    Fetch list of popular actors and directors from TMDb.
+    """
     api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
-    url = f'{BASE_URL}/movie/popular'
+    url = f'{BASE_URL}/person/popular'
     params = {
         'api_key': api_key,
         'language': language,
@@ -130,24 +181,26 @@ def get_popular_movies(language='en-US', page=1):
         if resp.status_code != 200:
             return []
 
-        raw_results = resp.json().get('results', [])
-        movies = []
-        for m in raw_results[:12]:
-            poster_path = m.get('poster_path')
-            backdrop_path = m.get('backdrop_path')
-            movies.append({
-                'id': m.get('id'),
-                'title': m.get('title') or m.get('original_title', 'Unknown'),
-                'overview': m.get('overview') or 'No overview available.',
-                'release_date': m.get('release_date') or 'N/A',
-                'year': (m.get('release_date') or '')[:4] or 'N/A',
-                'rating': round(m.get('vote_average', 0.0), 1),
-                'vote_count': m.get('vote_count', 0),
-                'popularity': round(m.get('popularity', 0.0), 1),
-                'poster_url': f'{IMAGE_BASE_URL}{poster_path}' if poster_path else None,
-                'backdrop_url': f'{BACKDROP_BASE_URL}{backdrop_path}' if backdrop_path else None,
+        raw_people = resp.json().get('results', [])
+        people = []
+        for p in raw_people:
+            profile_path = p.get('profile_path')
+            known_for_raw = p.get('known_for', [])
+            known_titles = []
+            for k in known_for_raw:
+                title = k.get('title') or k.get('name')
+                if title:
+                    known_titles.append(title)
+
+            people.append({
+                'id': p.get('id'),
+                'name': p.get('name', 'Unknown Person'),
+                'department': p.get('known_for_department', 'Acting'),
+                'popularity': round(p.get('popularity', 0.0), 1),
+                'profile_url': f'{PROFILE_BASE_URL}{profile_path}' if profile_path else None,
+                'known_for_titles': known_titles[:3]
             })
-        return movies
+        return people
     except Exception:
         return []
 

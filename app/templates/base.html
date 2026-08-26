@@ -31,43 +31,58 @@
                         <span class="brand-badge">AI 2.0</span>
                     </a>
 
-                    <!-- Left Navigation Menu (Home | Movies | TV Shows | People | Awards | More) -->
+                    <!-- Left Navigation Menu (Home | Movies (Dropdown) | TV Shows | People | Awards | More (GitHub)) -->
                     <nav class="nav-menu-links">
                         <a href="{{ url_for('index') }}" class="nav-menu-link">
                             <span>{{ t.nav_home }}</span>
                         </a>
-                        <a href="{{ url_for('index') }}#trending-section" class="nav-menu-link">
-                            <span>{{ t.nav_movies }}</span>
-                        </a>
-                        <a href="{{ url_for('genre_movies', genre_id=10770) }}" class="nav-menu-link">
-                            <span>{{ t.nav_tv_shows }}</span>
-                        </a>
-                        <a href="https://www.themoviedb.org/person" target="_blank" rel="noopener noreferrer" class="nav-menu-link">
-                            <span>{{ t.nav_people }}</span>
-                        </a>
-                        <a href="https://www.themoviedb.org/awards" target="_blank" rel="noopener noreferrer" class="nav-menu-link">
-                            <span>{{ t.nav_awards }}</span>
-                        </a>
-                        <div class="nav-more-dropdown" id="nav-more-dropdown">
-                            <button type="button" class="nav-menu-link nav-more-btn" id="nav-more-btn">
-                                <span>{{ t.nav_more }}</span>
-                                <i class="fa-solid fa-chevron-down nav-more-icon"></i>
+
+                        <!-- Movies Dropdown -->
+                        <div class="nav-dropdown-wrapper">
+                            <button type="button" class="nav-menu-link nav-dropdown-btn">
+                                <span>{{ t.nav_movies }}</span>
+                                <i class="fa-solid fa-chevron-down nav-chevron-icon"></i>
                             </button>
-                            <div class="nav-more-menu">
-                                <a href="{{ url_for('index') }}#genres-section" class="more-item">
-                                    <i class="fa-solid fa-layer-group"></i>
-                                    <span>{{ t.genres_title }}</span>
+                            <div class="nav-dropdown-menu">
+                                <a href="{{ url_for('movie_category', category='popular') }}" class="dropdown-nav-item">
+                                    <i class="fa-solid fa-fire"></i>
+                                    <span>{{ t.nav_popular_movies }}</span>
                                 </a>
-                                <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="more-item">
-                                    <i class="fa-solid fa-film"></i>
-                                    <span>The Movie Database (TMDb)</span>
+                                <a href="{{ url_for('movie_category', category='now_playing') }}" class="dropdown-nav-item">
+                                    <i class="fa-solid fa-play"></i>
+                                    <span>{{ t.nav_now_playing }}</span>
                                 </a>
-                                <a href="https://github.com/hoanguyen300802/cine-sentiment-ai" target="_blank" rel="noopener noreferrer" class="more-item">
-                                    <i class="fa-brands fa-github"></i>
-                                    <span>GitHub Repository</span>
+                                <a href="{{ url_for('movie_category', category='upcoming') }}" class="dropdown-nav-item">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                    <span>{{ t.nav_upcoming }}</span>
+                                </a>
+                                <a href="{{ url_for('movie_category', category='top_rated') }}" class="dropdown-nav-item">
+                                    <i class="fa-solid fa-star"></i>
+                                    <span>{{ t.nav_top_rated }}</span>
                                 </a>
                             </div>
                         </div>
+
+                        <!-- TV Shows -->
+                        <a href="{{ url_for('genre_movies', genre_id=10770) }}" class="nav-menu-link">
+                            <span>{{ t.nav_tv_shows }}</span>
+                        </a>
+
+                        <!-- Popular People (Internal page) -->
+                        <a href="{{ url_for('people') }}" class="nav-menu-link">
+                            <span>{{ t.nav_people }}</span>
+                        </a>
+
+                        <!-- Awards (Internal page) -->
+                        <a href="{{ url_for('awards') }}" class="nav-menu-link">
+                            <span>{{ t.nav_awards }}</span>
+                        </a>
+
+                        <!-- More (GitHub) -->
+                        <a href="https://github.com/hoanguyen300802/cine-sentiment-ai" target="_blank" rel="noopener noreferrer" class="nav-menu-link nav-github-link" title="GitHub Repository">
+                            <i class="fa-brands fa-github"></i>
+                            <span>GitHub</span>
+                        </a>
                     </nav>
                 </div>
 

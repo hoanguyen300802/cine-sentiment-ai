@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.awards_title }} | {{ t.app_name }}{% endblock %}
+
+{% block content %}
+<div class="results-header-section">
+    <a href="{{ url_for('index') }}" class="back-link-btn">
+        <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_search }}
+    </a>
+
+    <div class="results-title-box">
+        <span class="results-category-tag awards-tag">
+            <i class="fa-solid fa-trophy"></i> {{ t.nav_awards }}
+        </span>
+        <h1 class="results-main-title">{{ t.awards_title }}</h1>
+        <p class="results-count-text">{{ t.awards_subtitle }}</p>
+    </div>
+</div>
+
+<!-- Hall of Fame Movies Grid -->
+<div class="movies-catalog-grid">
+    {% for m in movies %}
+    <div class="movie-catalog-card award-card-highlight">
+        <div class="card-poster-wrapper">
+            {% if m.poster_url %}
+                <img src="{{ m.poster_url }}" alt="{{ m.title }}" class="catalog-poster-img" loading="lazy">
+            {% else %}
+                <div class="catalog-poster-placeholder">
+                    <i class="fa-solid fa-film"></i>
+                    <span>{{ t.no_poster }}</span>
+                </div>
+            {% endif %}
+            
+            <div class="card-rating-badge award-rating-badge">
+                <i class="fa-solid fa-trophy"></i> ⭐ {{ m.rating }}
+            </div>
+
+            {% if m.year and m.year != 'N/A' %}
+                <div class="card-year-badge">
+                    {{ m.year }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card-info-content">
+            <h3 class="card-movie-title" title="{{ m.title }}">
+                {{ m.title }}
+            </h3>
+            
+            <p class="card-movie-overview">
+                {{ m.overview }}
+            </p>
+
+            <div class="card-action-box">
+                <a href="{{ url_for('movie_detail', movie_id=m.id) }}" class="card-view-btn">
+                    <span>{{ t.view_details_btn }}</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

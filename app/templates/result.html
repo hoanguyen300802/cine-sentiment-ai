@@ -445,6 +445,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function performSentimentAnalysis(review) {
+        if (!review || !review.trim()) return;
+
         analyzeBtn.disabled = true;
         analyzeBtnText.textContent = "{{ t.analyzing }}";
 
@@ -456,22 +458,28 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({
                 review: review,
+                review_text: review,
+                user_review: review,
                 movie_name: "{{ movie_info.title }}"
             })
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error("HTTP error " + res.status);
+            return res.json();
+        })
         .then(response => {
             analyzeBtn.disabled = false;
             analyzeBtnText.textContent = "{{ t.analyze_btn }}";
 
-            if (response.success && response.data) {
-                renderSentimentData(response.data);
+            const sentimentData = (response && response.data) ? response.data : response;
+            if (sentimentData && sentimentData.sentiment) {
+                renderSentimentData(sentimentData);
             }
         })
         .catch(err => {
             analyzeBtn.disabled = false;
             analyzeBtnText.textContent = "{{ t.analyze_btn }}";
-            console.error(err);
+            console.error("Sentiment analysis error:", err);
         });
     }
 

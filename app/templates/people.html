@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.people_title }} | {{ t.app_name }}{% endblock %}
+
+{% block content %}
+<div class="results-header-section">
+    <a href="{{ url_for('index') }}" class="back-link-btn">
+        <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_search }}
+    </a>
+
+    <div class="results-title-box">
+        <span class="results-category-tag">
+            <i class="fa-solid fa-users"></i> {{ t.nav_people }}
+        </span>
+        <h1 class="results-main-title">{{ t.people_title }}</h1>
+        <p class="results-count-text">{{ t.people_subtitle }}</p>
+    </div>
+</div>
+
+<div class="people-grid-container">
+    {% for p in people %}
+    <div class="person-card">
+        <div class="person-avatar-wrapper">
+            {% if p.profile_url %}
+                <img src="{{ p.profile_url }}" alt="{{ p.name }}" class="person-avatar-img" loading="lazy">
+            {% else %}
+                <div class="person-avatar-placeholder">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            {% endif %}
+            <div class="person-popularity-badge">
+                <i class="fa-solid fa-fire"></i> {{ p.popularity }}
+            </div>
+        </div>
+
+        <div class="person-info-content">
+            <h3 class="person-name">{{ p.name }}</h3>
+            <span class="person-dept-tag">{{ p.department }}</span>
+
+            {% if p.known_for_titles %}
+            <div class="person-known-for">
+                <span class="known-for-label">{{ t.known_for }}:</span>
+                <p class="known-for-list">{{ p.known_for_titles | join(', ') }}</p>
+            </div>
+            {% endif %}
+
+            <a href="https://www.themoviedb.org/person/{{ p.id }}" target="_blank" rel="noopener noreferrer" class="person-view-tmdb-btn">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                <span>{{ t.view_tmdb }}</span>
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
