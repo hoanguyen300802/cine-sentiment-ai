@@ -12,8 +12,8 @@
     <!-- Favicon & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Main Design System CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Main Design System CSS (Cache-busted) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.2.0">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -66,11 +66,6 @@
                         <!-- TV Shows -->
                         <a href="{{ url_for('genre_movies', genre_id=10770) }}" class="nav-menu-link">
                             <span>{{ t.nav_tv_shows }}</span>
-                        </a>
-
-                        <!-- Popular People (Internal page) -->
-                        <a href="{{ url_for('people') }}" class="nav-menu-link">
-                            <span>{{ t.nav_people }}</span>
                         </a>
 
                         <!-- Awards (Internal page) -->
