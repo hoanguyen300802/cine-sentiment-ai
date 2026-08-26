@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if error_type == 'not_found' %}
+        {{ t.movie_not_found }} | {{ t.app_name }}
+    {% else %}
+        {{ t.error_title }} | {{ t.app_name }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="error-view-wrapper">
+    <div class="error-icon-box">
+        {% if error_type == 'not_found' %}
+            <i class="fa-solid fa-film"></i>
+        {% else %}
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        {% endif %}
+    </div>
+
+    <h1 class="error-title">
+        {% if error_type == 'not_found' %}
+            {{ t.movie_not_found }}
+        {% else %}
+            {{ t.error_title }}
+        {% endif %}
+    </h1>
+
+    <p class="error-desc">
+        {% if error_type == 'not_found' %}
+            {{ t.movie_not_found_desc.replace('{query}', query or '') }}
+        {% else %}
+            {{ t.api_error }}
+        {% endif %}
+    </p>
+
+    <!-- Quick Search Form -->
+    <div style="max-width: 480px; margin: 0 auto 1.5rem;">
+        <form action="{{ url_for('search_movie') }}" method="GET" class="search-box">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input 
+                type="text" 
+                name="movie_name" 
+                class="search-input" 
+                placeholder="{{ t.search_placeholder }}" 
+                required
+            >
+            <button type="submit" class="search-submit-btn">
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </form>
+    </div>
+
+    <a href="{{ url_for('index') }}" class="back-link" style="display: inline-flex;">
+        <i class="fa-solid fa-house"></i>
+        <span>{{ t.back_to_search }}</span>
+    </a>
+</div>
+{% endblock %}

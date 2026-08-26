@@ -1,0 +1,532 @@
+{% extends "base.html" %}
+
+{% block title %}{{ movie_info.title }} - {{ t.movie_details }} | {{ t.app_name }}{% endblock %}
+
+{% block content %}
+<!-- Top Back Navigation -->
+<div class="result-header-bar">
+    <a href="{{ url_for('index') }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>{{ t.back_to_search }}</span>
+    </a>
+</div>
+
+<!-- 1. Movie Details Hero Card -->
+<section class="movie-hero-card">
+    {% if movie_info.backdrop_url %}
+    <div class="movie-backdrop" style="background-image: url('{{ movie_info.backdrop_url }}');"></div>
+    {% endif %}
+
+    <div class="movie-content-grid">
+        <!-- Left: Poster Column -->
+        <div class="movie-poster-box">
+            {% if movie_info.poster_url %}
+                <img src="{{ movie_info.poster_url }}" alt="{{ movie_info.title }} Poster" class="movie-poster-img">
+            {% else %}
+                <div class="no-poster-box">
+                    <i class="fa-regular fa-image" style="font-size: 3rem;"></i>
+                    <span>{{ t.no_poster }}</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Movie Info Details -->
+        <div class="movie-info-details">
+            <h1 class="movie-title">{{ movie_info.title }}</h1>
+            
+            {% if movie_info.tagline %}
+            <p class="movie-tagline">"{{ movie_info.tagline }}"</p>
+            {% endif %}
+
+            <!-- Metadata Chips -->
+            <div class="movie-meta-chips">
+                <span class="meta-chip rating-badge">
+                    <i class="fa-solid fa-star"></i>
+                    <span>{{ movie_info.rating }} / 10</span>
+                </span>
+
+                <span class="meta-chip">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span>{{ movie_info.release_date }}</span>
+                </span>
+
+                {% if movie_info.runtime %}
+                <span class="meta-chip">
+                    <i class="fa-regular fa-clock"></i>
+                    <span>{{ movie_info.runtime }} {{ t.minutes }}</span>
+                </span>
+                {% endif %}
+
+                {% if movie_info.popularity %}
+                <span class="meta-chip">
+                    <i class="fa-solid fa-fire-flame-curved" style="color: #f43f5e;"></i>
+                    <span>{{ movie_info.popularity }}</span>
+                </span>
+                {% endif %}
+
+                {% if movie_info.vote_count %}
+                <span class="meta-chip">
+                    <i class="fa-solid fa-users"></i>
+                    <span>{{ movie_info.vote_count }} {{ t.votes }}</span>
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- Genres -->
+            {% if movie_info.genres %}
+            <div class="movie-genres-box">
+                {% for genre in movie_info.genres %}
+                <span class="genre-tag">{{ genre }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Overview -->
+            <div class="movie-overview-box">
+                <h3 class="movie-overview-title">{{ t.overview }}</h3>
+                <p class="movie-overview-text">{{ movie_info.overview }}</p>
+            </div>
+
+            <!-- External TMDb Link -->
+            <div class="movie-actions-row">
+                <a href="{{ movie_info.tmdb_url }}" target="_blank" rel="noopener noreferrer" class="tmdb-ext-btn">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <span>{{ t.view_tmdb }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2. Official Movie Trailer Section -->
+{% if movie_info.trailer_url %}
+<section class="trailer-card-section">
+    <div class="section-title-wrapper">
+        <div class="section-badge-pill">
+            <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
+            <span>{{ t.trailer_section_title }}</span>
+        </div>
+        <h2 class="sub-section-heading">
+            {{ movie_info.trailer_name or t.trailer_section_title }}
+        </h2>
+    </div>
+
+    <div class="trailer-video-wrapper">
+        <iframe 
+            src="{{ movie_info.trailer_url }}?rel=0&modestbranding=1" 
+            title="{{ movie_info.title }} Official Trailer" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen
+            class="trailer-iframe"
+        ></iframe>
+    </div>
+</section>
+{% endif %}
+
+<!-- 3. Cast & Characters Section -->
+{% if movie_info.cast %}
+<section class="cast-card-section">
+    <div class="section-title-wrapper">
+        <div class="section-badge-pill">
+            <i class="fa-solid fa-users-viewfinder"></i>
+            <span>{{ t.cast_section_title }}</span>
+        </div>
+        <h2 class="sub-section-heading">{{ t.cast_section_title }}</h2>
+    </div>
+
+    <div class="cast-grid">
+        {% for actor in movie_info.cast %}
+        <div class="cast-card">
+            <div class="cast-avatar-box">
+                {% if actor.profile_url %}
+                    <img src="{{ actor.profile_url }}" alt="{{ actor.name }}" class="cast-avatar-img" loading="lazy">
+                {% else %}
+                    <div class="cast-avatar-placeholder">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="cast-info">
+                <h4 class="cast-name">{{ actor.name }}</h4>
+                <p class="cast-character">{{ t.as_character }} <span>{{ actor.character }}</span></p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- 4. Sentiment Analysis Section (Multi-Language AI) -->
+<section class="sentiment-card" id="sentiment-section">
+    <div class="sentiment-card-header">
+        <span class="section-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> {{ t.multilingual_badge }}</span>
+        <h2 class="sentiment-title">{{ t.sentiment_section_title }}</h2>
+        <p class="sentiment-desc">{{ t.sentiment_section_desc }}</p>
+    </div>
+
+    <!-- Review Submission Form -->
+    <form id="sentiment-analysis-form" class="review-form">
+        <input type="hidden" name="movie_name" value="{{ movie_info.title }}">
+        
+        <div class="textarea-wrapper">
+            <textarea 
+                name="user_review" 
+                id="review-textarea" 
+                class="review-textarea" 
+                placeholder="{{ t.review_placeholder }}" 
+                required
+            >{{ user_review or '' }}</textarea>
+        </div>
+
+        <!-- Sample Reviews in Current Language -->
+        <div class="sample-reviews-box">
+            <div class="sample-title"><i class="fa-solid fa-comments"></i> {{ t.sample_reviews }}</div>
+            <div class="sample-chips-row">
+                <button type="button" class="sample-pill" data-text='{{ t.sample_pos }}'>
+                    <i class="fa-solid fa-thumbs-up" style="color: var(--color-pos); margin-right: 6px;"></i> {{ t.sample_pos }}
+                </button>
+                <button type="button" class="sample-pill" data-text='{{ t.sample_neu }}'>
+                    <i class="fa-solid fa-minus" style="color: var(--color-neu); margin-right: 6px;"></i> {{ t.sample_neu }}
+                </button>
+                <button type="button" class="sample-pill" data-text='{{ t.sample_neg }}'>
+                    <i class="fa-solid fa-thumbs-down" style="color: var(--color-neg); margin-right: 6px;"></i> {{ t.sample_neg }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Button Actions -->
+        <div class="review-btn-row">
+            <button type="submit" class="analyze-submit-btn" id="analyze-btn">
+                <i class="fa-solid fa-brain"></i>
+                <span id="analyze-btn-text">{{ t.analyze_btn }}</span>
+            </button>
+            <button type="button" class="clear-text-btn" id="clear-review-btn">
+                {{ t.clear_review }}
+            </button>
+        </div>
+    </form>
+
+    <!-- Dynamic Live Result Box -->
+    <div id="sentiment-results-container" class="sentiment-live-result" style="{% if not sentiment_data %}display: none;{% endif %}">
+        {% if sentiment_data %}
+        <div class="result-card-banner {{ sentiment_data.sentiment }}" id="result-banner">
+            <div class="sentiment-badge-large">
+                <div class="sentiment-icon-box" id="result-icon-box">
+                    {% if sentiment_data.sentiment == 'positive' %}
+                        <i class="fa-solid fa-face-smile"></i>
+                    {% elif sentiment_data.sentiment == 'negative' %}
+                        <i class="fa-solid fa-face-frown"></i>
+                    {% else %}
+                        <i class="fa-solid fa-face-meh"></i>
+                    {% endif %}
+                </div>
+                <div class="sentiment-label-text">
+                    <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                        <h4 id="result-label-text">
+                            {% if sentiment_data.sentiment == 'positive' %}{{ t.positive }}
+                            {% elif sentiment_data.sentiment == 'negative' %}{{ t.negative }}
+                            {% else %}{{ t.neutral }}{% endif %}
+                        </h4>
+                        <span class="detected-lang-chip" id="result-lang-chip">
+                            {{ sentiment_data.detected_lang_name }}
+                        </span>
+                    </div>
+                    <p id="result-tone-text">{{ sentiment_data.tone_description }}</p>
+                </div>
+            </div>
+            <div class="sentiment-score-chip" style="font-weight: 800; font-size: 1.25rem;" id="polarity-badge">
+                {{ sentiment_data.polarity }}
+            </div>
+        </div>
+
+        <!-- Translated English Preview (if original text was non-English) -->
+        <div id="translated-preview-box" class="translated-preview-card" style="{% if not sentiment_data.is_translated %}display: none;{% endif %}">
+            <div class="trans-header">
+                <i class="fa-solid fa-language"></i>
+                <span>{{ t.translated_preview_label }}</span>
+            </div>
+            <p id="trans-text-content" class="trans-text-content">"{{ sentiment_data.translated_text }}"</p>
+        </div>
+
+        <!-- Confidence Breakdown Meters -->
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">{{ t.confidence_breakdown }}</h3>
+        <div class="confidence-grid">
+            <div class="meter-card">
+                <div class="meter-header">
+                    <span><i class="fa-solid fa-circle-check" style="color: var(--color-pos);"></i> {{ t.positive }}</span>
+                    <span id="pct-pos">{{ sentiment_data.positive_pct }}%</span>
+                </div>
+                <div class="meter-bar-track">
+                    <div class="meter-bar-fill pos" id="bar-pos" style="width: {{ sentiment_data.positive_pct }}%;"></div>
+                </div>
+            </div>
+
+            <div class="meter-card">
+                <div class="meter-header">
+                    <span><i class="fa-solid fa-circle-minus" style="color: var(--color-neu);"></i> {{ t.neutral }}</span>
+                    <span id="pct-neu">{{ sentiment_data.neutral_pct }}%</span>
+                </div>
+                <div class="meter-bar-track">
+                    <div class="meter-bar-fill neu" id="bar-neu" style="width: {{ sentiment_data.neutral_pct }}%;"></div>
+                </div>
+            </div>
+
+            <div class="meter-card">
+                <div class="meter-header">
+                    <span><i class="fa-solid fa-circle-xmark" style="color: var(--color-neg);"></i> {{ t.negative }}</span>
+                    <span id="pct-neg">{{ sentiment_data.negative_pct }}%</span>
+                </div>
+                <div class="meter-bar-track">
+                    <div class="meter-bar-fill neg" id="bar-neg" style="width: {{ sentiment_data.negative_pct }}%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed NLP Metrics -->
+        <div class="nlp-stats-grid">
+            <div class="nlp-stat-box">
+                <div class="nlp-stat-val" id="stat-polarity">{{ sentiment_data.polarity }}</div>
+                <div class="nlp-stat-label">{{ t.polarity_score }}</div>
+            </div>
+            <div class="nlp-stat-box">
+                <div class="nlp-stat-val" id="stat-subjectivity">{{ sentiment_data.subjectivity }}</div>
+                <div class="nlp-stat-label">{{ t.subjectivity }}</div>
+            </div>
+            <div class="nlp-stat-box">
+                <div class="nlp-stat-val" id="stat-compound">{{ sentiment_data.compound }}</div>
+                <div class="nlp-stat-label">{{ t.compound_score }}</div>
+            </div>
+            <div class="nlp-stat-box">
+                <div class="nlp-stat-val" id="stat-words">{{ sentiment_data.word_count }}</div>
+                <div class="nlp-stat-label">Words</div>
+            </div>
+        </div>
+        {% else %}
+        <!-- Placeholder Template for AJAX -->
+        <div class="result-card-banner" id="result-banner">
+            <div class="sentiment-badge-large">
+                <div class="sentiment-icon-box" id="result-icon-box"></div>
+                <div class="sentiment-label-text">
+                    <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                        <h4 id="result-label-text"></h4>
+                        <span class="detected-lang-chip" id="result-lang-chip"></span>
+                    </div>
+                    <p id="result-tone-text"></p>
+                </div>
+            </div>
+            <div class="sentiment-score-chip" style="font-weight: 800; font-size: 1.25rem;" id="polarity-badge"></div>
+        </div>
+
+        <div id="translated-preview-box" class="translated-preview-card" style="display: none;">
+            <div class="trans-header">
+                <i class="fa-solid fa-language"></i>
+                <span>{{ t.translated_preview_label }}</span>
+            </div>
+            <p id="trans-text-content" class="trans-text-content"></p>
+        </div>
+
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">{{ t.confidence_breakdown }}</h3>
+        <div class="confidence-grid">
+            <div class="meter-card">
+                <div class="meter-header">
+                    <span><i class="fa-solid fa-circle-check" style="color: var(--color-pos);"></i> {{ t.positive }}</span>
+                    <span id="pct-pos">0%</span>
+                </div>
+                <div class="meter-bar-track">
+                    <div class="meter-bar-fill pos" id="bar-pos" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="meter-card">
+                <div class="meter-header">
+                    <span><i class="fa-solid fa-circle-minus" style="color: var(--color-neu);"></i> {{ t.neutral }}</span>
+                    <span id="pct-neu">0%</span>
+                </div>
+                <div class="meter-bar-track">
+                    <div class="meter-bar-fill neu" id="bar-neu" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="meter-card">
+                <div class="meter-header">
+                    <span><i class="fa-solid fa-circle-xmark" style="color: var(--color-neg);"></i> {{ t.negative }}</span>
+                    <span id="pct-neg">0%</span>
+                </div>
+                <div class="meter-bar-track">
+                    <div class="meter-bar-fill neg" id="bar-neg" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nlp-stats-grid">
+            <div class="nlp-stat-box">
+                <div class="nlp-stat-val" id="stat-polarity">0.0</div>
+                <div class="nlp-stat-label">{{ t.polarity_score }}</div>
+            </div>
+            <div class="nlp-stat-box">
+                <div class="nlp-stat-val" id="stat-subjectivity">0.0</div>
+                <div class="nlp-stat-label">{{ t.subjectivity }}</div>
+            </div>
+            <div class="nlp-stat-box">
+                <div class="nlp-stat-val" id="stat-compound">0.0</div>
+                <div class="nlp-stat-label">{{ t.compound_score }}</div>
+            </div>
+            <div class="nlp-stat-box">
+                <div class="nlp-stat-val" id="stat-words">0</div>
+                <div class="nlp-stat-label">Words</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('sentiment-analysis-form');
+    const textarea = document.getElementById('review-textarea');
+    const clearBtn = document.getElementById('clear-review-btn');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const analyzeBtnText = document.getElementById('analyze-btn-text');
+    const resultsContainer = document.getElementById('sentiment-results-container');
+    const samplePills = document.querySelectorAll('.sample-pill');
+
+    const resultBanner = document.getElementById('result-banner');
+    const resultIconBox = document.getElementById('result-icon-box');
+    const resultLabelText = document.getElementById('result-label-text');
+    const resultToneText = document.getElementById('result-tone-text');
+    const resultLangChip = document.getElementById('result-lang-chip');
+    const polarityBadge = document.getElementById('polarity-badge');
+
+    const transBox = document.getElementById('translated-preview-box');
+    const transText = document.getElementById('trans-text-content');
+
+    const pctPos = document.getElementById('pct-pos');
+    const barPos = document.getElementById('bar-pos');
+    const pctNeu = document.getElementById('pct-neu');
+    const barNeu = document.getElementById('bar-neu');
+    const pctNeg = document.getElementById('pct-neg');
+    const barNeg = document.getElementById('bar-neg');
+
+    const statPolarity = document.getElementById('stat-polarity');
+    const statSubjectivity = document.getElementById('stat-subjectivity');
+    const statCompound = document.getElementById('stat-compound');
+    const statWords = document.getElementById('stat-words');
+
+    // 1. Sample reviews auto-fill & run
+    samplePills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            let sampleText = this.getAttribute('data-text');
+            if (sampleText.startsWith('"') && sampleText.endsWith('"')) {
+                sampleText = sampleText.substring(1, sampleText.length - 1);
+            }
+            textarea.value = sampleText;
+            textarea.focus();
+            performSentimentAnalysis(sampleText);
+        });
+    });
+
+    // 2. Clear review
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            textarea.value = '';
+            textarea.focus();
+        });
+    }
+
+    // 3. Form submit event
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const review = textarea.value.trim();
+        if (!review) return;
+        performSentimentAnalysis(review);
+    });
+
+    function performSentimentAnalysis(review) {
+        analyzeBtn.disabled = true;
+        analyzeBtnText.textContent = "{{ t.analyzing }}";
+
+        fetch("{{ url_for('analyze_review') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify({
+                review: review,
+                movie_name: "{{ movie_info.title }}"
+            })
+        })
+        .then(res => res.json())
+        .then(response => {
+            analyzeBtn.disabled = false;
+            analyzeBtnText.textContent = "{{ t.analyze_btn }}";
+
+            if (response.success && response.data) {
+                renderSentimentData(response.data);
+            }
+        })
+        .catch(err => {
+            analyzeBtn.disabled = false;
+            analyzeBtnText.textContent = "{{ t.analyze_btn }}";
+            console.error(err);
+        });
+    }
+
+    function renderSentimentData(data) {
+        resultsContainer.style.display = 'block';
+
+        // Update banner class
+        resultBanner.className = 'result-card-banner ' + data.sentiment;
+
+        // Update icon & label
+        if (data.sentiment === 'positive') {
+            resultIconBox.innerHTML = '<i class="fa-solid fa-face-smile"></i>';
+            resultLabelText.textContent = "{{ t.positive }}";
+        } else if (data.sentiment === 'negative') {
+            resultIconBox.innerHTML = '<i class="fa-solid fa-face-frown"></i>';
+            resultLabelText.textContent = "{{ t.negative }}";
+        } else {
+            resultIconBox.innerHTML = '<i class="fa-solid fa-face-meh"></i>';
+            resultLabelText.textContent = "{{ t.neutral }}";
+        }
+
+        // Language & Tone
+        if (resultLangChip) {
+            resultLangChip.textContent = data.detected_lang_name;
+        }
+        resultToneText.textContent = data.tone_description;
+        polarityBadge.textContent = (data.polarity > 0 ? '+' : '') + data.polarity;
+
+        // Translated preview
+        if (data.is_translated && data.translated_text) {
+            transBox.style.display = 'block';
+            transText.textContent = '"' + data.translated_text + '"';
+        } else {
+            transBox.style.display = 'none';
+        }
+
+        // Confidence bars
+        pctPos.textContent = data.positive_pct + '%';
+        barPos.style.width = data.positive_pct + '%';
+
+        pctNeu.textContent = data.neutral_pct + '%';
+        barNeu.style.width = data.neutral_pct + '%';
+
+        pctNeg.textContent = data.negative_pct + '%';
+        barNeg.style.width = data.negative_pct + '%';
+
+        // NLP metrics
+        statPolarity.textContent = (data.polarity > 0 ? '+' : '') + data.polarity;
+        statSubjectivity.textContent = data.subjectivity;
+        statCompound.textContent = data.compound;
+        statWords.textContent = data.word_count;
+
+        // Scroll to results
+        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+});
+</script>
+{% endblock %}

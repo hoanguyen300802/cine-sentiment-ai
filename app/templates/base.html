@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ t.app_name }} - {{ t.tagline }}{% endblock %}</title>
+    
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="{{ t.subtitle }}">
+    <meta name="theme-color" content="#070913">
+    
+    <!-- Favicon & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Main Design System CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Top Navigation -->
+        <header class="navbar">
+            <div class="nav-content">
+                <a href="{{ url_for('index') }}" class="brand-logo" id="nav-brand-logo">
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-clapperboard"></i>
+                    </div>
+                    <span class="brand-title">{{ t.app_name }}</span>
+                    <span class="brand-badge">AI 2.0</span>
+                </a>
+
+                <div class="nav-actions">
+                    <!-- Multi-Language Selector Dropdown -->
+                    <div class="lang-dropdown" id="language-picker">
+                        <button class="lang-btn" type="button" aria-label="{{ t.language }}">
+                            <span class="lang-flag">{{ supported_langs[current_lang].flag }}</span>
+                            <span class="lang-name">{{ supported_langs[current_lang].name }}</span>
+                            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; margin-left: 2px;"></i>
+                        </button>
+                        <div class="lang-menu">
+                            {% for code, info in supported_langs.items() %}
+                            <a href="{{ url_for('set_language', lang=code) }}" class="lang-item {% if code == current_lang %}active{% endif %}">
+                                <span>{{ info.flag }}</span>
+                                <span>{{ info.name }}</span>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Dark / Light Theme Toggle -->
+                    <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" title="{{ t.theme_toggle }}">
+                        <i class="fa-solid fa-moon" id="theme-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-container">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Application Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p>&copy; 2026 <strong>{{ t.app_name }}</strong>. {{ t.footer_rights }}</p>
+                <p>
+                    {{ t.footer_powered }} 
+                    <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="tmdb-link">
+                        <i class="fa-solid fa-film"></i> The Movie Database (TMDb)
+                    </a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Theme & Storage Persistence Script -->
+    <script>
+        (function() {
+            // Theme Management
+            const savedTheme = localStorage.getItem('cine_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+
+            const toggleBtn = document.getElementById('theme-toggle-btn');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('cine_theme', newTheme);
+                    updateThemeIcon(newTheme);
+                });
+            }
+
+            function updateThemeIcon(theme) {
+                const icon = document.getElementById('theme-icon');
+                if (icon) {
+                    if (theme === 'dark') {
+                        icon.className = 'fa-solid fa-moon';
+                    } else {
+                        icon.className = 'fa-solid fa-sun';
+                    }
+                }
+            }
+        })();
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

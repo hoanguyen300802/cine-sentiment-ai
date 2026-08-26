@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: cinesentiment-ai
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python -c \"import nltk; nltk.download('vader_lexicon')\""
+    startCommand: "gunicorn manage:app"
+    envVars:
+      - key: TMDB_API_KEY
+        value: cf5fcc46b705439ea01d35de3e579877
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.12.2
