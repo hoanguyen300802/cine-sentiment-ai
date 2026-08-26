@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if is_genre %}
+        {{ t.genre_results_for }}: {{ search_query }} | {{ t.app_name }}
+    {% else %}
+        {{ t.search_results_for }} "{{ search_query }}" | {{ t.app_name }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Results Header Bar -->
+<div class="results-header-section">
+    <a href="{{ url_for('index') }}" class="back-link-btn">
+        <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_search }}
+    </a>
+
+    <div class="results-title-box">
+        {% if is_genre %}
+            <span class="results-category-tag">
+                <i class="fa-solid fa-tags"></i> {{ t.genres_title }}
+            </span>
+            <h1 class="results-main-title">{{ search_query }}</h1>
+        {% else %}
+            <span class="results-category-tag">
+                <i class="fa-solid fa-magnifying-glass"></i> {{ t.search_btn }}
+            </span>
+            <h1 class="results-main-title">
+                {{ t.search_results_for }} <span class="highlight-query">"{{ search_query }}"</span>
+            </h1>
+        {% endif %}
+        <p class="results-count-text">
+            <i class="fa-solid fa-film"></i> <strong>{{ movies|length }}</strong> {{ t.movies_found }}
+        </p>
+    </div>
+</div>
+
+{% if genres %}
+<!-- Optional Genre Filter Bar -->
+<div class="genre-filter-container">
+    <div class="genre-chips-scroll">
+        {% for g in genres %}
+            <a href="{{ url_for('genre_movies', genre_id=g.id) }}" 
+               class="genre-chip-btn {% if genre_id == g.id %}active{% endif %}">
+                {{ g.name }}
+            </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Movies Grid -->
+<div class="movies-catalog-grid">
+    {% for m in movies %}
+    <div class="movie-catalog-card">
+        <div class="card-poster-wrapper">
+            {% if m.poster_url %}
+                <img src="{{ m.poster_url }}" alt="{{ m.title }}" class="catalog-poster-img" loading="lazy">
+            {% else %}
+                <div class="catalog-poster-placeholder">
+                    <i class="fa-solid fa-film"></i>
+                    <span>{{ t.no_poster }}</span>
+                </div>
+            {% endif %}
+            
+            {% if m.rating and m.rating > 0 %}
+                <div class="card-rating-badge">
+                    <i class="fa-solid fa-star"></i> {{ m.rating }}
+                </div>
+            {% endif %}
+
+            {% if m.year and m.year != 'N/A' %}
+                <div class="card-year-badge">
+                    {{ m.year }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card-info-content">
+            <h3 class="card-movie-title" title="{{ m.title }}">
+                {{ m.title }}
+            </h3>
+            
+            <p class="card-movie-overview">
+                {{ m.overview }}
+            </p>
+
+            <div class="card-action-box">
+                <a href="{{ url_for('movie_detail', movie_id=m.id) }}" class="card-view-btn">
+                    <span>{{ t.view_details_btn }}</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

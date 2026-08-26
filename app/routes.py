@@ -1,138 +1,169 @@
 """
 Application Route Handlers
-Implements clean routing, multi-language switching, TMDb discovery, and sentiment AI endpoints.
+Implements multi-language routing, TMDb search listing, genre filtering, movie details, and sentiment AI endpoints.
 """
 
 from flask import render_template, request, redirect, url_for, session, jsonify
 from app import app
-from app.api_config import get_movie_info
-from app.sentiment_analysis import analyze_sentiment
-from app.translations import (
-    SUPPORTED_LANGUAGES,
-    DEFAULT_LANGUAGE,
-    get_translations,
-    get_tmdb_language
+from app.api_config import (
+    search_movies,
+    get_genres,
+    get_movies_by_genre,
+    get_popular_movies,
+    get_movie_details_by_id,
+    get_movie_info
 )
+from app.sentiment_analysis import analyze_sentiment
+from app.translations import SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, get_translations, get_tmdb_language
 
 
 @app.context_processor
-def inject_global_variables():
-    """Inject language settings and translations into all Jinja2 templates."""
+def inject_global_template_vars():
+    """
+    Injects active language dictionary and supported languages into all templates.
+    """
     current_lang = session.get('lang', DEFAULT_LANGUAGE)
     if current_lang not in SUPPORTED_LANGUAGES:
         current_lang = DEFAULT_LANGUAGE
-        session['lang'] = current_lang
-        
-    return {
-        'current_lang': current_lang,
-        'supported_langs': SUPPORTED_LANGUAGES,
-        't': get_translations(current_lang)
-    }
+
+    t = get_translations(current_lang)
+    return dict(
+        t=t,
+        current_lang=current_lang,
+        supported_langs=SUPPORTED_LANGUAGES,
+        supported_languages=SUPPORTED_LANGUAGES,
+        active_lang_info=SUPPORTED_LANGUAGES[current_lang]
+    )
+
+
+@app.route('/set_language', methods=['GET'])
+@app.route('/set_language/<lang_code>', methods=['GET'])
+def set_language(lang_code=None):
+    """
+    Switches active language stored in session and redirects back to previous page.
+    """
+    selected = lang_code or request.args.get('lang')
+    if selected and selected in SUPPORTED_LANGUAGES:
+        session['lang'] = selected
+    return redirect(request.referrer or url_for('index'))
 
 
 @app.route('/')
 def index():
-    """Home landing page with hero spotlight search and recent searches."""
-    return render_template('index.html')
+    """
+    Home page: renders spotlight search bar, genre tags, and trending/popular movies.
+    """
+    current_lang = session.get('lang', DEFAULT_LANGUAGE)
+    tmdb_lang = get_tmdb_language(current_lang)
+
+    genres = get_genres(language=tmdb_lang)
+    popular_movies = get_popular_movies(language=tmdb_lang)
+
+    return render_template('index.html', genres=genres, popular_movies=popular_movies)
 
 
 @app.route('/search', methods=['GET', 'POST'])
-def search_movie():
-    """Search for movie details via TMDb and present the result view."""
+def search():
+    """
+    Searches TMDb and returns a LIST of matching movies.
+    """
     if request.method == 'POST':
-        movie_name = request.form.get('movie_name', '').strip()
+        query = request.form.get('movie_name', '').strip()
     else:
-        movie_name = request.args.get('movie_name', '').strip()
+        query = request.args.get('q', '').strip()
 
-    if not movie_name:
+    if not query:
         return redirect(url_for('index'))
 
     current_lang = session.get('lang', DEFAULT_LANGUAGE)
     tmdb_lang = get_tmdb_language(current_lang)
-    
-    movie_info = get_movie_info(movie_name, language=tmdb_lang)
 
-    if not movie_info:
-        return render_template(
-            'error.html',
-            error_type='not_found',
-            query=movie_name
-        ), 404
+    movies = search_movies(query, language=tmdb_lang)
+
+    if not movies:
+        return render_template('error.html', error_type='not_found', query=query)
+
+    # Render the search results list page
+    return render_template(
+        'search_results.html',
+        movies=movies,
+        search_query=query,
+        result_title=None,
+        is_genre=False
+    )
+
+
+@app.route('/genre/<int:genre_id>')
+def genre_movies(genre_id):
+    """
+    Discovers and displays movies belonging to a specific genre.
+    """
+    current_lang = session.get('lang', DEFAULT_LANGUAGE)
+    tmdb_lang = get_tmdb_language(current_lang)
+
+    genres = get_genres(language=tmdb_lang)
+    genre_name = next((g['name'] for g in genres if g['id'] == genre_id), f'Genre #{genre_id}')
+
+    movies = get_movies_by_genre(genre_id, language=tmdb_lang)
+
+    if not movies:
+        return render_template('error.html', error_type='not_found', query=genre_name)
 
     return render_template(
-        'result.html',
-        movie_info=movie_info,
-        query=movie_name,
-        user_review=None,
-        sentiment_data=None
+        'search_results.html',
+        movies=movies,
+        search_query=genre_name,
+        result_title=genre_name,
+        is_genre=True,
+        genre_id=genre_id,
+        genres=genres
     )
+
+
+@app.route('/movie/<int:movie_id>')
+def movie_detail(movie_id):
+    """
+    Displays full details for a selected movie by its ID,
+    including actors/cast, YouTube trailer, and the interactive Sentiment AI.
+    """
+    current_lang = session.get('lang', DEFAULT_LANGUAGE)
+    tmdb_lang = get_tmdb_language(current_lang)
+
+    movie_info = get_movie_details_by_id(movie_id, language=tmdb_lang)
+
+    if not movie_info:
+        return render_template('error.html', error_type='not_found', query=f'Movie #{movie_id}')
+
+    return render_template('result.html', movie_info=movie_info)
 
 
 @app.route('/analyze_sentiment', methods=['POST'])
 def analyze_review():
     """
-    Analyzes movie review text.
-    Supports both asynchronous AJAX requests and traditional form submissions.
+    AJAX / Form endpoint for real-time sentiment analysis.
     """
-    is_ajax = request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'application/json' in request.accept_mimetypes
-
     if request.is_json:
         data = request.get_json()
-        user_review = data.get('review', '').strip()
-        movie_name = data.get('movie_name', '').strip()
+        review_text = data.get('review_text', '')
     else:
-        user_review = request.form.get('user_review', request.form.get('review', '')).strip()
-        movie_name = request.form.get('movie_name', '').strip()
+        review_text = request.form.get('review_text', '')
 
-    if not user_review:
-        if is_ajax:
-            return jsonify({'success': False, 'error': 'Empty review'}), 400
-        return redirect(url_for('search_movie', movie_name=movie_name))
+    result = analyze_sentiment(review_text)
 
-    # Execute NLP Sentiment Analysis
-    sentiment_data = analyze_sentiment(user_review)
+    if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify(result)
 
-    if is_ajax:
-        return jsonify({
-            'success': True,
-            'review': user_review,
-            'data': sentiment_data
-        })
-
-    # Non-AJAX fallback: render full template with result
-    current_lang = session.get('lang', DEFAULT_LANGUAGE)
-    tmdb_lang = get_tmdb_language(current_lang)
-    movie_info = get_movie_info(movie_name, language=tmdb_lang) if movie_name else None
-
-    return render_template(
-        'result.html',
-        movie_info=movie_info,
-        query=movie_name,
-        user_review=user_review,
-        sentiment_data=sentiment_data
-    )
-
-
-@app.route('/set_language/<lang>')
-def set_language(lang):
-    """Switch user interface and data language."""
-    if lang in SUPPORTED_LANGUAGES:
-        session['lang'] = lang
-    
-    # Redirect back to the previous page or home
-    referrer = request.referrer
-    if referrer and ('/search' in referrer or '/set_language' not in referrer):
-        return redirect(referrer)
+    movie_id = request.form.get('movie_id')
+    if movie_id:
+        return redirect(url_for('movie_detail', movie_id=movie_id))
     return redirect(url_for('index'))
 
 
 @app.errorhandler(404)
 def page_not_found(e):
-    """Custom 404 handler."""
     return render_template('error.html', error_type='404'), 404
 
 
 @app.errorhandler(500)
 def server_error(e):
-    """Custom 500 handler."""
     return render_template('error.html', error_type='500'), 500

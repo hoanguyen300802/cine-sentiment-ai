@@ -1370,3 +1370,316 @@ button, input, textarea, select {
     gap: 1rem;
   }
 }
+
+/* ==========================================================================
+   16. Movies Catalog Grid, Genres & Search Results Layout
+   ========================================================================== */
+
+/* Section Headings */
+.section-title-row {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.section-heading {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Genres Grid & Tiles */
+.genres-explore-section {
+  margin-bottom: 3.5rem;
+}
+
+.genres-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.85rem;
+}
+
+.genre-tile-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1.1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  backdrop-filter: var(--glass-blur);
+  text-decoration: none;
+}
+
+.genre-tile-btn i {
+  color: var(--accent-cyan);
+  font-size: 0.95rem;
+  transition: transform var(--transition-fast);
+}
+
+.genre-tile-btn:hover {
+  border-color: var(--border-glow);
+  background: var(--bg-surface-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  color: #fff;
+}
+
+.genre-tile-btn:hover i {
+  transform: scale(1.2);
+}
+
+/* Genre Filter Bar in Results */
+.genre-filter-container {
+  margin-bottom: 2rem;
+}
+
+.genre-chips-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: 0.2rem 0;
+}
+
+.genre-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.genre-chip-btn:hover, .genre-chip-btn.active {
+  background: var(--accent-gradient);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  transform: translateY(-2px);
+}
+
+/* Results Header */
+.results-header-section {
+  margin-bottom: 2.5rem;
+}
+
+.results-title-box {
+  margin-top: 1.25rem;
+}
+
+.results-category-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.results-main-title {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.4rem;
+}
+
+.highlight-query {
+  color: var(--accent-cyan);
+}
+
+.results-count-text {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* Movies Catalog Grid */
+.popular-movies-section {
+  margin-bottom: 3.5rem;
+}
+
+.movies-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.75rem;
+}
+
+.movie-catalog-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  backdrop-filter: var(--glass-blur);
+}
+
+.movie-catalog-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-glow), var(--shadow-lg);
+}
+
+.card-poster-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.catalog-poster-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--transition-normal);
+}
+
+.movie-catalog-card:hover .catalog-poster-img {
+  transform: scale(1.05);
+}
+
+.catalog-poster-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  background: var(--bg-secondary);
+}
+
+.catalog-poster-placeholder i {
+  font-size: 2.2rem;
+  opacity: 0.5;
+}
+
+.card-rating-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.card-year-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.card-info-content {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.card-movie-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 0.5rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-movie-overview {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+.card-action-box {
+  margin-top: auto;
+}
+
+.card-view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.card-view-btn:hover {
+  background: var(--accent-gradient);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+
+.card-view-btn i {
+  transition: transform var(--transition-fast);
+}
+
+.card-view-btn:hover i {
+  transform: translateX(4px);
+}

@@ -6,70 +6,157 @@
 <section class="hero-section">
     <div class="hero-pill">
         <i class="fa-solid fa-wand-magic-sparkles"></i>
-        <span>Next-Gen NLP & Cinema Analytics</span>
+        <span>{{ t.multilingual_badge }}</span>
+    </div>
+    
+    <h1 class="hero-title">
+        <span class="gradient-text">{{ t.app_name }}</span>
+    </h1>
+    <p class="hero-subtitle">{{ t.subtitle }}</p>
+
+    <!-- Search Form Component -->
+    <div class="search-box-wrapper">
+        <form action="{{ url_for('search') }}" method="POST" class="search-form" id="search-form">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input 
+                    type="text" 
+                    name="movie_name" 
+                    id="movie_search_input" 
+                    class="search-input" 
+                    placeholder="{{ t.search_placeholder }}" 
+                    required 
+                    autocomplete="off"
+                    autofocus
+                >
+                <button type="button" id="clear-search-btn" class="search-clear-btn" title="Clear">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <button type="submit" id="search-submit-btn" class="search-submit-btn">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span>{{ t.search_btn }}</span>
+                </button>
+            </div>
+        </form>
     </div>
 
-    <h1 class="hero-title">
-        {{ t.tagline.split('&')[0] }} &amp; <br>
-        <span class="gradient-text">{% if '&' in t.tagline %}{{ t.tagline.split('&')[1] }}{% else %}{{ t.tagline }}{% endif %}</span>
-    </h1>
-
-    <p class="hero-subtitle">
-        {{ t.subtitle }}
-    </p>
-
-    <!-- Search Form -->
-    <div class="search-form-wrapper">
-        <form action="{{ url_for('search_movie') }}" method="GET" class="search-box" id="movie-search-form">
-            <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input 
-                type="text" 
-                name="movie_name" 
-                id="movie-search-input" 
-                class="search-input" 
-                placeholder="{{ t.search_placeholder }}" 
-                autocomplete="off" 
-                required
-            >
-            <button type="submit" class="search-submit-btn" id="search-submit-btn">
-                <i class="fa-solid fa-arrow-right"></i>
-                <span id="search-btn-text">{{ t.search_btn }}</span>
-            </button>
-        </form>
-
-        <!-- Dynamic Recent Searches from localStorage -->
-        <div class="recent-searches-box" id="recent-searches-box" style="display: none;">
-            <span class="recent-title"><i class="fa-solid fa-clock-rotate-left"></i> {{ t.recent_searches }}:</span>
-            <div id="recent-chips-container" style="display: inline-flex; flex-wrap: wrap; gap: 0.4rem;"></div>
-            <button type="button" class="clear-recent-btn" id="clear-recent-btn">{{ t.clear_history }}</button>
+    <!-- Recent Searches -->
+    <div id="recent-searches-container" class="recent-searches-box" style="display: none;">
+        <div class="recent-header">
+            <span class="recent-title"><i class="fa-solid fa-clock-rotate-left"></i> {{ t.recent_searches }}</span>
+            <button type="button" id="clear-history-btn" class="clear-history-btn">{{ t.clear_history }}</button>
         </div>
+        <div id="recent-chips" class="recent-chips-row"></div>
     </div>
 </section>
 
-<!-- Features Grid -->
-<section class="features-grid">
-    <div class="feature-card">
-        <div class="feature-icon-wrapper">
-            <i class="fa-solid fa-film"></i>
+{% if genres %}
+<!-- Browse by Genre Section -->
+<section class="genres-explore-section">
+    <div class="section-title-row">
+        <div class="section-badge">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>{{ t.genres_title }}</span>
         </div>
-        <h3>{{ t.feature_1_title }}</h3>
-        <p>{{ t.feature_1_desc }}</p>
+        <h2 class="section-heading">{{ t.genres_title }}</h2>
+    </div>
+    
+    <div class="genres-grid-container">
+        {% for g in genres %}
+            <a href="{{ url_for('genre_movies', genre_id=g.id) }}" class="genre-tile-btn">
+                <i class="fa-solid fa-film"></i>
+                <span>{{ g.name }}</span>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{% if popular_movies %}
+<!-- Trending / Popular Movies Showcase -->
+<section class="popular-movies-section">
+    <div class="section-title-row">
+        <div class="section-badge">
+            <i class="fa-solid fa-fire"></i>
+            <span>{{ t.trending_movies_title }}</span>
+        </div>
+        <h2 class="section-heading">{{ t.trending_movies_title }}</h2>
     </div>
 
-    <div class="feature-card">
-        <div class="feature-icon-wrapper" style="background: rgba(236, 72, 153, 0.12); color: #f472b6; border-color: rgba(236, 72, 153, 0.25);">
-            <i class="fa-solid fa-brain"></i>
-        </div>
-        <h3>{{ t.feature_2_title }}</h3>
-        <p>{{ t.feature_2_desc }}</p>
-    </div>
+    <div class="movies-catalog-grid">
+        {% for m in popular_movies %}
+        <div class="movie-catalog-card">
+            <div class="card-poster-wrapper">
+                {% if m.poster_url %}
+                    <img src="{{ m.poster_url }}" alt="{{ m.title }}" class="catalog-poster-img" loading="lazy">
+                {% else %}
+                    <div class="catalog-poster-placeholder">
+                        <i class="fa-solid fa-film"></i>
+                        <span>{{ t.no_poster }}</span>
+                    </div>
+                {% endif %}
+                
+                {% if m.rating and m.rating > 0 %}
+                    <div class="card-rating-badge">
+                        <i class="fa-solid fa-star"></i> {{ m.rating }}
+                    </div>
+                {% endif %}
 
-    <div class="feature-card">
-        <div class="feature-icon-wrapper" style="background: rgba(6, 182, 212, 0.12); color: #22d3ee; border-color: rgba(6, 182, 212, 0.25);">
-            <i class="fa-solid fa-globe"></i>
+                {% if m.year and m.year != 'N/A' %}
+                    <div class="card-year-badge">
+                        {{ m.year }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="card-info-content">
+                <h3 class="card-movie-title" title="{{ m.title }}">
+                    {{ m.title }}
+                </h3>
+                
+                <p class="card-movie-overview">
+                    {{ m.overview }}
+                </p>
+
+                <div class="card-action-box">
+                    <a href="{{ url_for('movie_detail', movie_id=m.id) }}" class="card-view-btn">
+                        <span>{{ t.view_details_btn }}</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
         </div>
-        <h3>{{ t.feature_3_title }}</h3>
-        <p>{{ t.feature_3_desc }}</p>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Features Showcase Section -->
+<section class="features-section">
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon-box">
+                <i class="fa-solid fa-film"></i>
+            </div>
+            <h3 class="feature-title">{{ t.feature_1_title }}</h3>
+            <p class="feature-desc">{{ t.feature_1_desc }}</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon-box">
+                <i class="fa-solid fa-brain"></i>
+            </div>
+            <h3 class="feature-title">{{ t.feature_2_title }}</h3>
+            <p class="feature-desc">{{ t.feature_2_desc }}</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon-box">
+                <i class="fa-solid fa-earth-americas"></i>
+            </div>
+            <h3 class="feature-title">{{ t.feature_3_title }}</h3>
+            <p class="feature-desc">{{ t.feature_3_desc }}</p>
+        </div>
     </div>
 </section>
 {% endblock %}
@@ -77,78 +164,80 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const searchForm = document.getElementById('movie-search-form');
-    const searchInput = document.getElementById('movie-search-input');
-    const recentBox = document.getElementById('recent-searches-box');
-    const recentContainer = document.getElementById('recent-chips-container');
-    const clearRecentBtn = document.getElementById('clear-recent-btn');
-    const searchSubmitBtn = document.getElementById('search-submit-btn');
-    const searchBtnText = document.getElementById('search-btn-text');
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('movie_search_input');
+    const clearBtn = document.getElementById('clear-search-btn');
+    const recentContainer = document.getElementById('recent-searches-container');
+    const recentChips = document.getElementById('recent-chips');
+    const clearHistoryBtn = document.getElementById('clear-history-btn');
 
-    const STORAGE_KEY = 'cine_recent_searches';
-
-    // 1. Load recent searches
-    function loadRecentSearches() {
-        try {
-            const history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-            if (history.length === 0) {
-                recentBox.style.display = 'none';
-                return;
-            }
-            recentContainer.innerHTML = '';
-            history.slice(0, 5).forEach(term => {
-                const chip = document.createElement('span');
-                chip.className = 'recent-chip';
-                chip.textContent = term;
-                chip.addEventListener('click', function() {
-                    searchInput.value = term;
-                    submitSearch(term);
-                });
-                recentContainer.appendChild(chip);
-            });
-            recentBox.style.display = 'flex';
-        } catch (e) {
-            recentBox.style.display = 'none';
-        }
-    }
-
-    // 2. Save search term to history
-    function saveSearchTerm(term) {
-        if (!term || !term.trim()) return;
-        const cleanTerm = term.trim();
-        try {
-            let history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-            history = history.filter(item => item.toLowerCase() !== cleanTerm.toLowerCase());
-            history.unshift(cleanTerm);
-            if (history.length > 8) history = history.slice(0, 8);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-        } catch (e) {}
-    }
-
-    function submitSearch(term) {
-        saveSearchTerm(term);
-        searchBtnText.textContent = "{{ t.searching }}";
-        searchSubmitBtn.disabled = true;
-        searchForm.submit();
-    }
-
-    // Form Submit Event
-    searchForm.addEventListener('submit', function(e) {
-        const val = searchInput.value.trim();
-        if (val) {
-            saveSearchTerm(val);
-            searchBtnText.textContent = "{{ t.searching }}";
-            searchSubmitBtn.disabled = true;
+    // Manage clear button visibility
+    searchInput.addEventListener('input', function() {
+        if (this.value.trim().length > 0) {
+            clearBtn.classList.add('visible');
+        } else {
+            clearBtn.classList.remove('visible');
         }
     });
 
-    // Clear History Button
-    if (clearRecentBtn) {
-        clearRecentBtn.addEventListener('click', function() {
-            localStorage.removeItem(STORAGE_KEY);
-            recentBox.style.display = 'none';
-        });
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        searchInput.focus();
+        clearBtn.classList.remove('visible');
+    });
+
+    // Recent Searches in localStorage
+    function loadRecentSearches() {
+        try {
+            const raw = localStorage.getItem('cine_recent_searches');
+            const recents = raw ? JSON.parse(raw) : [];
+            if (recents && recents.length > 0) {
+                recentChips.innerHTML = '';
+                recents.forEach(term => {
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.className = 'recent-chip';
+                    chip.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> <span>${term}</span>`;
+                    chip.addEventListener('click', function() {
+                        searchInput.value = term;
+                        searchForm.submit();
+                    });
+                    recentChips.appendChild(chip);
+                });
+                recentContainer.style.display = 'block';
+            } else {
+                recentContainer.style.display = 'none';
+            }
+        } catch(e) {}
     }
+
+    function saveRecentSearch(term) {
+        if (!term || !term.trim()) return;
+        try {
+            const raw = localStorage.getItem('cine_recent_searches');
+            let recents = raw ? JSON.parse(raw) : [];
+            recents = recents.filter(item => item.toLowerCase() !== term.toLowerCase());
+            recents.unshift(term.trim());
+            if (recents.length > 8) recents = recents.slice(0, 8);
+            localStorage.setItem('cine_recent_searches', JSON.stringify(recents));
+        } catch(e) {}
+    }
+
+    searchForm.addEventListener('submit', function() {
+        const query = searchInput.value.trim();
+        if (query) {
+            saveRecentSearch(query);
+            const submitBtn = document.getElementById('search-submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span>{{ t.searching }}</span>';
+        }
+    });
+
+    clearHistoryBtn.addEventListener('click', function() {
+        localStorage.removeItem('cine_recent_searches');
+        recentContainer.style.display = 'none';
+        recentChips.innerHTML = '';
+    });
 
     loadRecentSearches();
 });
