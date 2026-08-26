@@ -18,7 +18,12 @@ DEFAULT_LANGUAGE = 'en'
 
 TRANSLATIONS = {
     'en': {
-        'nav_home': 'Home',
+        'nav_more': '더보기',
+        'nav_awards': '시상식',
+        'nav_people': '인물',
+        'nav_tv_shows': 'TV 프로그램',
+        'nav_movies': '영화',
+        'nav_home': '홈',
         'nav_genres': 'Genres',
         'nav_trending': 'Trending',
         'nav_sentiment': 'Sentiment AI',
@@ -95,7 +100,7 @@ TRANSLATIONS = {
         'footer_powered': 'Powered by',
     },
     'vi': {
-        'nav_home': 'Trang Chủ',
+        'nav_home': '홈',
         'nav_genres': 'Thể Loại',
         'nav_trending': 'Thịnh Hành',
         'nav_sentiment': 'Phân Tích Cảm Xúc',
@@ -172,7 +177,7 @@ TRANSLATIONS = {
         'footer_powered': 'Được hỗ trợ bởi',
     },
     'zh': {
-        'nav_home': '首页',
+        'nav_home': '홈',
         'nav_genres': '电影类型',
         'nav_trending': '热门趋势',
         'nav_sentiment': '影评分析',
@@ -249,7 +254,7 @@ TRANSLATIONS = {
         'footer_powered': '数据来源',
     },
     'es': {
-        'nav_home': 'Inicio',
+        'nav_home': '홈',
         'nav_genres': 'Géneros',
         'nav_trending': 'Tendencias',
         'nav_sentiment': 'Análisis IA',
@@ -326,7 +331,7 @@ TRANSLATIONS = {
         'footer_powered': 'Desarrollado con',
     },
     'fr': {
-        'nav_home': 'Accueil',
+        'nav_home': '홈',
         'nav_genres': 'Genres',
         'nav_trending': 'Tendances',
         'nav_sentiment': 'Analyse IA',
@@ -403,7 +408,7 @@ TRANSLATIONS = {
         'footer_powered': 'Propulsé par',
     },
     'ja': {
-        'nav_home': 'ホーム',
+        'nav_home': '홈',
         'nav_genres': 'ジャンル',
         'nav_trending': 'トレンド',
         'nav_sentiment': '感情分析AI',
@@ -480,7 +485,7 @@ TRANSLATIONS = {
         'footer_powered': 'データ提供',
     },
     'de': {
-        'nav_home': 'Startseite',
+        'nav_home': '홈',
         'nav_genres': 'Genres',
         'nav_trending': 'Trends',
         'nav_sentiment': 'Sentiment-KI',
