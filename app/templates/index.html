@@ -29,9 +29,6 @@
                     autocomplete="off"
                     autofocus
                 >
-                <button type="button" id="clear-search-btn" class="search-clear-btn" title="Clear">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
                 <button type="submit" id="search-submit-btn" class="search-submit-btn">
                     <i class="fa-solid fa-arrow-right"></i>
                     <span>{{ t.search_btn }}</span>
@@ -166,25 +163,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     const searchForm = document.getElementById('search-form');
     const searchInput = document.getElementById('movie_search_input');
-    const clearBtn = document.getElementById('clear-search-btn');
     const recentContainer = document.getElementById('recent-searches-container');
     const recentChips = document.getElementById('recent-chips');
     const clearHistoryBtn = document.getElementById('clear-history-btn');
-
-    // Manage clear button visibility
-    searchInput.addEventListener('input', function() {
-        if (this.value.trim().length > 0) {
-            clearBtn.classList.add('visible');
-        } else {
-            clearBtn.classList.remove('visible');
-        }
-    });
-
-    clearBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        searchInput.focus();
-        clearBtn.classList.remove('visible');
-    });
 
     // Recent Searches in localStorage
     function loadRecentSearches() {
