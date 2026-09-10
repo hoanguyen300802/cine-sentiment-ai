@@ -27,6 +27,7 @@ class User(db.Model, UserMixin):
     bio = db.Column(db.String(300), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     last_login = db.Column(db.DateTime, nullable=True)
+    is_admin = db.Column(db.Boolean, default=False, nullable=False)
 
     # Relationships
     watchlist_items = db.relationship(
@@ -63,6 +64,7 @@ class User(db.Model, UserMixin):
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
             'watchlist_count': self.watchlist_items.count(),
             'reviews_count': self.reviews.count(),
+            'is_admin': self.is_admin,
         }
 
     def __repr__(self):

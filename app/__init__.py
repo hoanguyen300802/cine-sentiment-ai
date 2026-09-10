@@ -55,9 +55,16 @@ from app.watchlist_routes import watchlist_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(watchlist_bp)
 
-# Create database tables automatically
+# Create database tables automatically & safe column migration
 with app.app_context():
     db.create_all()
+    try:
+        from sqlalchemy import text
+        with db.engine.connect() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0 NOT NULL"))
+            conn.commit()
+    except Exception:
+        pass  # Column already exists or table was just created
 
 # Import routes after app initialization to prevent circular dependencies
 from app import routes

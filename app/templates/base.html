@@ -128,6 +128,9 @@
                                 <i class="fa-solid fa-user"></i>
                             </div>
                             <span class="user-nav-username">{{ current_user.get_display_name() }}</span>
+                            {% if current_user.is_admin %}
+                            <span style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4); font-size: 0.65rem; font-weight: 800; padding: 0.1rem 0.38rem; border-radius: 4px;">ADMIN</span>
+                            {% endif %}
                             {% if user_watchlist_count > 0 %}
                             <span class="user-counter-dot">{{ user_watchlist_count }}</span>
                             {% endif %}
@@ -236,6 +239,7 @@
                         <i class="fa-solid fa-brain" style="color: #a855f7;"></i>
                         AI NLP: <strong>TextBlob</strong> &amp; <strong>NLTK VADER</strong>
                     </span>
+                    {% if current_user.is_authenticated and current_user.is_admin %}
                     <span class="compliance-divider">&bull;</span>
                     <span class="compliance-badge">
                         {% if telegram_configured %}
@@ -243,9 +247,10 @@
                             <span style="color: #10b981;">Telegram Bot Active</span>
                         {% else %}
                             <i class="fa-brands fa-telegram" style="color: #64748b;"></i>
-                            <span style="color: #94a3b8;">Telegram Bot Ready</span>
+                            <span style="color: #94a3b8;">Telegram Bot Offline</span>
                         {% endif %}
                     </span>
+                    {% endif %}
                 </div>
                 <p class="footer-disclaimer-text">
                     This educational application uses the TMDb API but is not endorsed or certified by TMDb. All movie posters, imagery, and trailers are property of their respective copyright owners and studios.

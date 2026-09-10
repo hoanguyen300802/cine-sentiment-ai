@@ -14,8 +14,60 @@ if __name__ == '__main__':
             print("=" * 60)
             for u in users:
                 created = u.created_at.strftime('%Y-%m-%d %H:%M:%S') if u.created_at else 'N/A'
-                print(f" ID: {u.id} | Username: {u.username} | Email: {u.email} | Name: {u.get_display_name()} | Created: {created}")
+                role = "ADMIN" if getattr(u, 'is_admin', False) else "USER"
+                print(f" ID: {u.id} | [{role}] {u.username} | Email: {u.email} | Name: {u.get_display_name()} | Created: {created}")
             print("=" * 60)
+        sys.exit(0)
+
+    # CLI Utility: Create an Administrator account
+    elif args and args[0] == 'create-admin':
+        if len(args) < 4:
+            print("Usage: python manage.py create-admin <username> <email> <password> [display_name]")
+            sys.exit(1)
+        uname = args[1].strip()
+        email = args[2].strip().lower()
+        pwd = args[3].strip()
+        dname = args[4].strip() if len(args) > 4 else uname
+        with app.app_context():
+            existing = User.query.filter((User.username == uname) | (User.email == email)).first()
+            if existing:
+                existing.is_admin = True
+                existing.set_password(pwd)
+                db.session.commit()
+                print(f"[SUCCESS] User '{existing.username}' updated to ADMINISTRATOR with new password.")
+            else:
+                new_admin = User(
+                    username=uname,
+                    email=email,
+                    display_name=dname,
+                    is_admin=True
+                )
+                new_admin.set_password(pwd)
+                db.session.add(new_admin)
+                db.session.commit()
+                print("=" * 60)
+                print("[SUCCESS] Administrator account created successfully!")
+                print(f" Username    : {uname}")
+                print(f" Email       : {email}")
+                print(f" Display Name: {dname}")
+                print(f" Role        : ADMINISTRATOR (is_admin=True)")
+                print("=" * 60)
+        sys.exit(0)
+
+    # CLI Utility: Promote existing user to Admin
+    elif args and args[0] == 'set-admin':
+        if len(args) < 2:
+            print("Usage: python manage.py set-admin <username_or_email>")
+            sys.exit(1)
+        target = args[1].strip()
+        with app.app_context():
+            u = User.query.filter((User.username == target) | (User.email == target.lower())).first()
+            if not u:
+                print(f"[ERROR] User '{target}' not found.")
+                sys.exit(1)
+            u.is_admin = True
+            db.session.commit()
+            print(f"[SUCCESS] User '{u.username}' promoted to ADMINISTRATOR.")
         sys.exit(0)
 
     # CLI Utility: Delete a specific user by username or email

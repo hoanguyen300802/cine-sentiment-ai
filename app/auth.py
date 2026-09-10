@@ -238,11 +238,17 @@ def check_username():
 @auth_bp.route('/api/telegram/test_alert', methods=['POST'])
 @login_required
 def test_telegram_alert():
-    """Endpoint allowing logged-in users/admins to test Telegram Bot integration."""
+    """Endpoint allowing ONLY admin users to test Telegram Bot integration."""
+    if not getattr(current_user, 'is_admin', False):
+        return jsonify({
+            'success': False,
+            'message': 'Access denied: Only administrator accounts can test Telegram settings.'
+        }), 403
+
     success, msg = telegram_bot.send_message(
         f"🧪 <b>CineSentiment AI — Test Notification</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"👤 Triggered by: <code>{current_user.username}</code>\n"
+        f"👤 Triggered by Administrator: <code>{current_user.username}</code>\n"
         f"🕒 Time: <code>{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}</code>\n"
         f"✅ Bot notification pipeline is functioning perfectly!"
     )
