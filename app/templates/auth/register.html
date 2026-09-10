@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.register }} | {{ t.app_name }}{% endblock %}
+
+{% block content %}
+<div class="auth-page-container">
+    <div class="auth-card register-card">
+        <!-- Auth Header -->
+        <div class="auth-header">
+            <div class="auth-icon-badge">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h1 class="auth-title">{{ t.register }}</h1>
+            <p class="auth-subtitle">{{ t.subtitle }}</p>
+
+            {% if telegram_configured %}
+            <div class="telegram-active-pill">
+                <i class="fa-brands fa-telegram"></i>
+                <span>{{ t.telegram_bot_badge }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Registration Form -->
+        <form action="{{ url_for('auth.register') }}" method="POST" class="auth-form" id="register-form">
+            <div class="form-row-2col">
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        <i class="fa-solid fa-at"></i> {{ t.username }} *
+                    </label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        class="form-input" 
+                        value="{{ username or '' }}" 
+                        placeholder="john_doe" 
+                        required 
+                        minlength="3" 
+                        maxlength="30"
+                        autocomplete="off"
+                        autofocus
+                    >
+                    <div id="username-feedback" class="field-feedback"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="display_name" class="form-label">
+                        <i class="fa-solid fa-id-card"></i> {{ t.display_name }}
+                    </label>
+                    <input 
+                        type="text" 
+                        id="display_name" 
+                        name="display_name" 
+                        class="form-input" 
+                        value="{{ display_name or '' }}" 
+                        placeholder="John Doe"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">
+                    <i class="fa-solid fa-envelope"></i> {{ t.email }} *
+                </label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-input" 
+                    value="{{ email or '' }}" 
+                    placeholder="john@example.com" 
+                    required
+                >
+            </div>
+
+            <div class="form-row-2col">
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="fa-solid fa-lock"></i> {{ t.password }} *
+                    </label>
+                    <div class="input-with-icon password-toggle-wrapper">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="form-input" 
+                            placeholder="••••••••" 
+                            required 
+                            minlength="6"
+                        >
+                        <button type="button" class="btn-toggle-password" id="toggle-reg-password" aria-label="Toggle password visibility">
+                            <i class="fa-solid fa-eye" id="reg-eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password" class="form-label">
+                        <i class="fa-solid fa-shield-halved"></i> {{ t.confirm_password }} *
+                    </label>
+                    <input 
+                        type="password" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        class="form-input" 
+                        placeholder="••••••••" 
+                        required 
+                        minlength="6"
+                    >
+                </div>
+            </div>
+
+            <!-- Password Strength Bar -->
+            <div class="password-strength-container" id="strength-container" style="display: none;">
+                <div class="strength-bar-track">
+                    <div class="strength-bar-fill" id="strength-bar"></div>
+                </div>
+                <span class="strength-label" id="strength-label">Password strength</span>
+            </div>
+
+            <button type="submit" class="auth-submit-btn" id="register-submit-btn">
+                <i class="fa-solid fa-user-check"></i>
+                <span>{{ t.create_account_btn }}</span>
+            </button>
+        </form>
+
+        <!-- Auth Footer -->
+        <div class="auth-card-footer">
+            <p>{{ t.have_account }} <a href="{{ url_for('auth.login') }}" class="auth-link-highlight">{{ t.login }}</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Password toggle
+    const toggleBtn = document.getElementById('toggle-reg-password');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('reg-eye-icon');
+    const confirmInput = document.getElementById('confirm_password');
+    const strengthContainer = document.getElementById('strength-container');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthLabel = document.getElementById('strength-label');
+    const usernameInput = document.getElementById('username');
+    const usernameFeedback = document.getElementById('username-feedback');
+
+    if (toggleBtn && passwordInput && eyeIcon) {
+        toggleBtn.addEventListener('click', function() {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.className = 'fa-solid fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.className = 'fa-solid fa-eye';
+            }
+        });
+    }
+
+    // Password strength indicator
+    if (passwordInput && strengthContainer) {
+        passwordInput.addEventListener('input', function() {
+            const val = this.value;
+            if (!val) {
+                strengthContainer.style.display = 'none';
+                return;
+            }
+            strengthContainer.style.display = 'block';
+            let score = 0;
+            if (val.length >= 6) score += 1;
+            if (val.length >= 10) score += 1;
+            if (/[0-9]/.test(val)) score += 1;
+            if (/[^A-Za-z0-9]/.test(val)) score += 1;
+
+            if (score <= 1) {
+                strengthBar.style.width = '25%';
+                strengthBar.style.backgroundColor = '#ef4444';
+                strengthLabel.textContent = 'Weak';
+                strengthLabel.style.color = '#ef4444';
+            } else if (score === 2) {
+                strengthBar.style.width = '50%';
+                strengthBar.style.backgroundColor = '#f59e0b';
+                strengthLabel.textContent = 'Medium';
+                strengthLabel.style.color = '#f59e0b';
+            } else if (score === 3) {
+                strengthBar.style.width = '75%';
+                strengthBar.style.backgroundColor = '#06b6d4';
+                strengthLabel.textContent = 'Good';
+                strengthLabel.style.color = '#06b6d4';
+            } else {
+                strengthBar.style.width = '100%';
+                strengthBar.style.backgroundColor = '#10b981';
+                strengthLabel.textContent = 'Strong';
+                strengthLabel.style.color = '#10b981';
+            }
+        });
+    }
+
+    // Real-time username check debounce
+    let debounceTimer;
+    if (usernameInput && usernameFeedback) {
+        usernameInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const u = this.value.trim();
+            if (u.length < 3) {
+                usernameFeedback.textContent = '';
+                return;
+            }
+            debounceTimer = setTimeout(() => {
+                fetch(`{{ url_for('auth.check_username') }}?username=${encodeURIComponent(u)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.available) {
+                            usernameFeedback.textContent = '✓ ' + data.message;
+                            usernameFeedback.className = 'field-feedback valid';
+                        } else {
+                            usernameFeedback.textContent = '✕ ' + data.message;
+                            usernameFeedback.className = 'field-feedback invalid';
+                        }
+                    })
+                    .catch(() => {});
+            }, 300);
+        });
+    }
+});
+</script>
+{% endblock %}

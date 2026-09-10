@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.my_profile }} | {{ t.app_name }}{% endblock %}
+
+{% block content %}
+<div class="profile-page-wrapper">
+    <!-- Header Banner -->
+    <div class="profile-header-card">
+        <div class="profile-avatar-row">
+            <div class="profile-avatar-large">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="profile-identity">
+                <h1 class="profile-user-name">{{ current_user.get_display_name() }}</h1>
+                <div class="profile-meta-badges">
+                    <span class="meta-pill"><i class="fa-solid fa-at"></i> {{ current_user.username }}</span>
+                    <span class="meta-pill"><i class="fa-solid fa-envelope"></i> {{ current_user.email }}</span>
+                    <span class="meta-pill"><i class="fa-solid fa-calendar-check"></i> {{ t.member_since }}: {{ current_user.created_at.strftime('%d/%m/%Y') }}</span>
+                </div>
+                {% if current_user.bio %}
+                <p class="profile-bio-text">"{{ current_user.bio }}"</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Stats Row -->
+        <div class="profile-stats-grid">
+            <a href="{{ url_for('watchlist_bp.view_watchlist') }}" class="profile-stat-box">
+                <div class="stat-icon"><i class="fa-solid fa-bookmark"></i></div>
+                <div class="stat-number">{{ watchlist_count }}</div>
+                <div class="stat-label">{{ t.my_watchlist }}</div>
+            </a>
+            <a href="{{ url_for('watchlist_bp.my_reviews') }}" class="profile-stat-box">
+                <div class="stat-icon"><i class="fa-solid fa-brain"></i></div>
+                <div class="stat-number">{{ reviews_count }}</div>
+                <div class="stat-label">{{ t.my_reviews }}</div>
+            </a>
+            <div class="profile-stat-box">
+                <div class="stat-icon"><i class="fa-solid fa-shield-heart"></i></div>
+                <div class="stat-number">Active</div>
+                <div class="stat-label">Account Status</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telegram Bot Status Card -->
+    <div class="telegram-status-card">
+        <div class="telegram-card-header">
+            <div class="telegram-header-left">
+                <i class="fa-brands fa-telegram telegram-logo-icon"></i>
+                <div>
+                    <h3 class="telegram-heading">Telegram Chatbot Notification Hub</h3>
+                    <p class="telegram-subtext">
+                        {% if telegram_configured %}
+                            {{ t.telegram_connected_desc }}
+                        {% else %}
+                            {{ t.telegram_setup_hint }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            <div class="telegram-header-right">
+                {% if telegram_configured %}
+                <button type="button" class="btn-test-telegram" id="btn-test-telegram">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span id="btn-test-text">{{ t.telegram_test_btn }}</span>
+                </button>
+                {% else %}
+                <span class="badge-disconnected"><i class="fa-solid fa-circle-exclamation"></i> {{ t.telegram_bot_disconnected }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div id="telegram-test-result" class="telegram-alert-box" style="display: none;"></div>
+    </div>
+
+    <!-- Edit Profile & Change Password Grid -->
+    <div class="profile-settings-grid">
+        <!-- Edit Profile Form -->
+        <div class="settings-card">
+            <div class="card-section-title">
+                <i class="fa-solid fa-user-pen"></i>
+                <h3>{{ t.profile_settings }}</h3>
+            </div>
+            <form action="{{ url_for('auth.profile') }}" method="POST" class="settings-form">
+                <input type="hidden" name="action" value="update_info">
+                <div class="form-group">
+                    <label for="display_name" class="form-label">{{ t.display_name }}</label>
+                    <input 
+                        type="text" 
+                        id="display_name" 
+                        name="display_name" 
+                        class="form-input" 
+                        value="{{ current_user.display_name or '' }}" 
+                        placeholder="Your display name"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="bio" class="form-label">{{ t.bio }}</label>
+                    <textarea 
+                        id="bio" 
+                        name="bio" 
+                        class="form-input" 
+                        rows="3" 
+                        placeholder="{{ t.bio_placeholder }}"
+                    >{{ current_user.bio or '' }}</textarea>
+                </div>
+                <button type="submit" class="auth-submit-btn">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <span>{{ t.update_profile }}</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Change Password Form -->
+        <div class="settings-card">
+            <div class="card-section-title">
+                <i class="fa-solid fa-key"></i>
+                <h3>{{ t.change_password }}</h3>
+            </div>
+            <form action="{{ url_for('auth.profile') }}" method="POST" class="settings-form">
+                <input type="hidden" name="action" value="change_password">
+                <div class="form-group">
+                    <label for="old_password" class="form-label">{{ t.current_password }}</label>
+                    <input 
+                        type="password" 
+                        id="old_password" 
+                        name="old_password" 
+                        class="form-input" 
+                        placeholder="••••••••" 
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="new_password" class="form-label">{{ t.new_password }}</label>
+                    <input 
+                        type="password" 
+                        id="new_password" 
+                        name="new_password" 
+                        class="form-input" 
+                        placeholder="•••••••• (min 6 chars)" 
+                        required 
+                        minlength="6"
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="confirm_new_password" class="form-label">{{ t.confirm_password }}</label>
+                    <input 
+                        type="password" 
+                        id="confirm_new_password" 
+                        name="confirm_new_password" 
+                        class="form-input" 
+                        placeholder="••••••••" 
+                        required
+                    >
+                </div>
+                <button type="submit" class="auth-submit-btn secondary-btn">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>{{ t.change_password }}</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const testBtn = document.getElementById('btn-test-telegram');
+    const resultBox = document.getElementById('telegram-test-result');
+    const testText = document.getElementById('btn-test-text');
+
+    if (testBtn) {
+        testBtn.addEventListener('click', function() {
+            testBtn.disabled = true;
+            testText.textContent = '{{ t.telegram_sending }}';
+            resultBox.style.display = 'none';
+
+            fetch('{{ url_for("auth.test_telegram_alert") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                testBtn.disabled = false;
+                testText.textContent = '{{ t.telegram_test_btn }}';
+                resultBox.style.display = 'block';
+                if (data.success) {
+                    resultBox.className = 'telegram-alert-box success';
+                    resultBox.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + data.message;
+                } else {
+                    resultBox.className = 'telegram-alert-box error';
+                    resultBox.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' + data.message;
+                }
+            })
+            .catch(err => {
+                testBtn.disabled = false;
+                testText.textContent = '{{ t.telegram_test_btn }}';
+                resultBox.style.display = 'block';
+                resultBox.className = 'telegram-alert-box error';
+                resultBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Network error: ' + err;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

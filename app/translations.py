@@ -104,9 +104,69 @@ TRANSLATIONS = {
         'api_error': 'Service temporarily unavailable. Please verify your internet connection or TMDb API key.',
         'empty_review_error': 'Please enter a review to analyze.',
         'theme_toggle': 'Toggle Theme',
-        'language': 'Language',
         'footer_rights': 'All rights reserved.',
         'footer_powered': 'Powered by',
+        # Auth & Profile
+        'login': 'Log In',
+        'register': 'Sign Up',
+        'logout': 'Log Out',
+        'username': 'Username',
+        'email': 'Email Address',
+        'password': 'Password',
+        'confirm_password': 'Confirm Password',
+        'display_name': 'Display Name',
+        'remember_me': 'Remember Me',
+        'have_account': 'Already have an account?',
+        'no_account': "Don't have an account?",
+        'create_account_btn': 'Create Account',
+        'login_btn': 'Log In',
+        'my_profile': 'My Profile',
+        'profile_settings': 'Profile Settings',
+        'update_profile': 'Update Profile',
+        'change_password': 'Change Password',
+        'current_password': 'Current Password',
+        'new_password': 'New Password',
+        'bio': 'Bio / About Me',
+        'bio_placeholder': 'Tell us something about your movie tastes...',
+        'member_since': 'Member Since',
+        'last_active': 'Last Active',
+        # Watchlist & Reviews
+        'my_watchlist': 'My Watchlist',
+        'my_reviews': 'My Review History',
+        'add_to_watchlist': 'Save to Watchlist',
+        'in_watchlist': 'In Watchlist',
+        'remove_from_watchlist': 'Remove',
+        'watchlist_empty': 'Your watchlist is currently empty. Explore trending movies to start saving!',
+        'reviews_empty': 'You have not analyzed any reviews yet. Try analyzing a movie review now!',
+        'explore_movies': 'Explore Movies',
+        'similar_movies': 'Similar Movies You Might Like',
+        'community_reviews': 'Community Reviews from TMDb',
+        'no_community_reviews': 'No community reviews available yet for this title.',
+        'analyze_this_review': 'Analyze Sentiment with AI',
+        'read_more': 'Read Full Review',
+        'read_less': 'Collapse',
+        # Telegram Bot integration
+        'telegram_bot_badge': 'Telegram Alerts Connected',
+        'telegram_bot_disconnected': 'Telegram Bot Offline',
+        'telegram_test_btn': 'Send Test Telegram Alert',
+        'telegram_sending': 'Sending Alert...',
+        'telegram_connected_desc': 'Telegram bot is actively configured to dispatch new registration and sentiment alerts to your Telegram chat.',
+        'telegram_setup_hint': 'To receive instant registration notifications on Telegram, set TELEGRAM_BOT_TOKEN and TELEGRAM_ADMIN_CHAT_ID in .env.',
+        # Pagination & Filters
+        'page': 'Page',
+        'of': 'of',
+        'previous': 'Previous',
+        'next': 'Next',
+        'filter_all': 'All Reviews',
+        'filter_positive': 'Positive Only',
+        'filter_neutral': 'Neutral Only',
+        'filter_negative': 'Negative Only',
+        'sort_by': 'Sort By',
+        'sort_newest': 'Recently Added',
+        'sort_rating': 'Highest Rating',
+        'sort_title': 'Title (A-Z)',
+        'delete_review': 'Delete',
+        'confirm_delete': 'Are you sure you want to delete this item?',
     },
     'vi': {
         'nav_home': 'Trang Chủ',
@@ -194,10 +254,69 @@ TRANSLATIONS = {
         'movie_not_found_desc': 'Không tìm thấy bộ phim nào khớp với từ khóa "{query}". Vui lòng kiểm tra lại chính tả.',
         'api_error': 'Dịch vụ tạm thời gián đoạn. Vui lòng kiểm tra kết nối mạng hoặc API key TMDb.',
         'empty_review_error': 'Vui lòng nhập nhận xét cần phân tích.',
-        'theme_toggle': 'Đổi Giao Diện',
-        'language': 'Ngôn Ngữ',
         'footer_rights': 'Đã đăng ký bản quyền.',
         'footer_powered': 'Được hỗ trợ bởi',
+        # Auth & Profile
+        'login': 'Đăng Nhập',
+        'register': 'Đăng Ký',
+        'logout': 'Đăng Xuất',
+        'username': 'Tên Đăng Nhập',
+        'email': 'Địa Chỉ Email',
+        'password': 'Mật Khẩu',
+        'confirm_password': 'Xác Nhận Mật Khẩu',
+        'display_name': 'Tên Hiển Thị',
+        'remember_me': 'Ghi nhớ đăng nhập',
+        'have_account': 'Đã có tài khoản?',
+        'no_account': 'Chưa có tài khoản?',
+        'create_account_btn': 'Tạo Tài Khoản',
+        'login_btn': 'Đăng Nhập Ngay',
+        'my_profile': 'Hồ Sơ Của Tôi',
+        'profile_settings': 'Cài Đặt Tài Khoản',
+        'update_profile': 'Lưu Thay Đổi',
+        'change_password': 'Đổi Mật Khẩu',
+        'current_password': 'Mật Khẩu Hiện Tại',
+        'new_password': 'Mật Khẩu Mới',
+        'bio': 'Giới Thiệu Bản Thân',
+        'bio_placeholder': 'Chia sẻ đôi điều về gu phim của bạn...',
+        'member_since': 'Tham gia từ',
+        'last_active': 'Hoạt động gần nhất',
+        # Watchlist & Reviews
+        'my_watchlist': 'Phim Yêu Thích',
+        'my_reviews': 'Lịch Sử Đánh Giá',
+        'add_to_watchlist': 'Lưu Vào Yêu Thích',
+        'in_watchlist': 'Đã Lưu Yêu Thích',
+        'remove_from_watchlist': 'Xóa Khỏi Danh Sách',
+        'watchlist_empty': 'Danh sách phim yêu thích đang trống. Khám phá các bộ phim hot để lưu lại nhé!',
+        'reviews_empty': 'Bạn chưa phân tích cảm xúc bài đánh giá nào. Hãy thử phân tích một bài ngay!',
+        'explore_movies': 'Khám Phá Phim Ngay',
+        'similar_movies': 'Phim Tương Tự Có Thể Bạn Thích',
+        'community_reviews': 'Đánh Giá Từ Cộng Đồng TMDb',
+        'no_community_reviews': 'Chưa có đánh giá cộng đồng nào cho phim này.',
+        'analyze_this_review': 'Phân Tích Cảm Xúc Bằng AI',
+        'read_more': 'Đọc toàn bộ',
+        'read_less': 'Thu gọn',
+        # Telegram Bot integration
+        'telegram_bot_badge': 'Đã Kết Nối Telegram Bot',
+        'telegram_bot_disconnected': 'Telegram Bot Chưa Kích Hoạt',
+        'telegram_test_btn': 'Gửi Thử Thông Báo Telegram',
+        'telegram_sending': 'Đang gửi thông báo...',
+        'telegram_connected_desc': 'Telegram Bot đã được cấu hình để gửi thông báo tức thời khi có tài khoản mới đăng ký hoặc cảm xúc đặc biệt.',
+        'telegram_setup_hint': 'Để nhận thông báo đăng ký tài khoản qua Telegram, hãy cấu hình TELEGRAM_BOT_TOKEN và TELEGRAM_ADMIN_CHAT_ID trong file .env.',
+        # Pagination & Filters
+        'page': 'Trang',
+        'of': 'trên',
+        'previous': 'Trang Trước',
+        'next': 'Trang Sau',
+        'filter_all': 'Tất Cả Đánh Giá',
+        'filter_positive': 'Chỉ Tích Cực',
+        'filter_neutral': 'Chỉ Trung Lập',
+        'filter_negative': 'Chỉ Tiêu Cực',
+        'sort_by': 'Sắp Xếp Theo',
+        'sort_newest': 'Mới Thêm Gần Đây',
+        'sort_rating': 'Điểm Đánh Giá Cao Nhất',
+        'sort_title': 'Tên Phim (A-Z)',
+        'delete_review': 'Xóa',
+        'confirm_delete': 'Bạn có chắc chắn muốn xóa mục này?',
     },
     'zh': {
         'nav_home': '首页',
@@ -749,10 +868,19 @@ TRANSLATIONS = {
 
 
 def get_translations(lang_code):
-    """Retrieve translation dictionary for the specified language code."""
+    """
+    Retrieve translation dictionary for the specified language code.
+    Safely falls back to English for any missing keys to prevent Jinja2 rendering issues.
+    """
     if not lang_code or lang_code not in TRANSLATIONS:
         lang_code = DEFAULT_LANGUAGE
-    return TRANSLATIONS[lang_code]
+
+    # Base dictionary from English
+    base = dict(TRANSLATIONS.get(DEFAULT_LANGUAGE, {}))
+    if lang_code != DEFAULT_LANGUAGE and lang_code in TRANSLATIONS:
+        base.update(TRANSLATIONS[lang_code])
+    return base
+
 
 
 def get_tmdb_language(lang_code):

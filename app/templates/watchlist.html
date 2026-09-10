@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.my_watchlist }} | {{ t.app_name }}{% endblock %}
+
+{% block content %}
+<div class="results-header-section">
+    <a href="{{ url_for('index') }}" class="back-link-btn">
+        <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_search }}
+    </a>
+
+    <div class="results-title-box">
+        <span class="results-category-tag">
+            <i class="fa-solid fa-bookmark"></i> {{ t.my_watchlist }}
+        </span>
+        <h1 class="results-main-title">{{ t.my_watchlist }}</h1>
+        <p class="results-count-text">
+            <i class="fa-solid fa-film"></i> 
+            <strong id="watchlist-count-display">{{ watchlist|length }}</strong> {{ t.movies_found }}
+        </p>
+    </div>
+
+    <!-- Sorting Options -->
+    {% if watchlist %}
+    <div class="sort-bar-container">
+        <label for="watchlist-sort" class="sort-label"><i class="fa-solid fa-arrow-down-wide-short"></i> {{ t.sort_by }}:</label>
+        <select id="watchlist-sort" class="sort-select" onchange="location.href='?sort=' + this.value;">
+            <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>{{ t.sort_newest }}</option>
+            <option value="rating" {% if current_sort == 'rating' %}selected{% endif %}>{{ t.sort_rating }}</option>
+            <option value="title" {% if current_sort == 'title' %}selected{% endif %}>{{ t.sort_title }}</option>
+        </select>
+    </div>
+    {% endif %}
+</div>
+
+{% if watchlist %}
+<div class="movies-catalog-grid" id="watchlist-grid">
+    {% for item in watchlist %}
+    <div class="movie-catalog-card" id="card-movie-{{ item.movie_id }}">
+        <div class="card-poster-wrapper">
+            {% if item.poster_url %}
+                <img src="{{ item.poster_url }}" alt="{{ item.movie_title }}" class="catalog-poster-img" loading="lazy">
+            {% else %}
+                <div class="catalog-poster-placeholder">
+                    <i class="fa-solid fa-film"></i>
+                    <span>{{ t.no_poster }}</span>
+                </div>
+            {% endif %}
+
+            {% if item.rating and item.rating > 0 %}
+                <div class="card-rating-badge">
+                    <i class="fa-solid fa-star"></i> {{ item.rating }}
+                </div>
+            {% endif %}
+
+            {% if item.year and item.year != 'N/A' %}
+                <div class="card-year-badge">
+                    {{ item.year }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="card-info-content">
+            <h3 class="card-movie-title" title="{{ item.movie_title }}">
+                {{ item.movie_title }}
+            </h3>
+
+            <div class="card-action-box">
+                <a href="{{ url_for('movie_detail', movie_id=item.movie_id) }}" class="card-view-btn">
+                    <span>{{ t.view_details_btn }}</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+
+                <button 
+                    type="button" 
+                    class="btn-remove-watchlist" 
+                    onclick="removeFromWatchlist({{ item.movie_id }}, '{{ item.movie_title|escape }}')"
+                    title="{{ t.remove_from_watchlist }}"
+                >
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<!-- Empty State -->
+<div class="empty-state-box">
+    <div class="empty-icon-circle">
+        <i class="fa-regular fa-bookmark"></i>
+    </div>
+    <h3 class="empty-title">{{ t.my_watchlist }}</h3>
+    <p class="empty-desc">{{ t.watchlist_empty }}</p>
+    <a href="{{ url_for('index') }}" class="primary-cta-btn">
+        <i class="fa-solid fa-compass"></i>
+        <span>{{ t.explore_movies }}</span>
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function removeFromWatchlist(movieId, movieTitle) {
+    if (!confirm('{{ t.confirm_delete }}')) return;
+
+    fetch('{{ url_for("watchlist_bp.toggle_watchlist") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            movie_id: movieId,
+            movie_title: movieTitle
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const card = document.getElementById('card-movie-' + movieId);
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    card.remove();
+                    const counter = document.getElementById('watchlist-count-display');
+                    if (counter) counter.textContent = data.count;
+                    if (data.count === 0) {
+                        location.reload();
+                    }
+                }, 300);
+            }
+        }
+    })
+    .catch(err => console.error('Error removing from watchlist:', err));
+}
+</script>
+{% endblock %}

@@ -7,3 +7,6 @@ env/
 .vscode/
 .idea/
 *.log
+instance/
+*.db
+.env

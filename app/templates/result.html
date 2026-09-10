@@ -87,8 +87,29 @@
                 <p class="movie-overview-text">{{ movie_info.overview }}</p>
             </div>
 
-            <!-- External TMDb Link -->
+            <!-- Movie Action Buttons (Watchlist + TMDb Link) -->
             <div class="movie-actions-row">
+                {% if current_user.is_authenticated %}
+                <button 
+                    type="button" 
+                    class="watchlist-action-btn {% if in_watchlist %}in-watchlist{% endif %}" 
+                    id="btn-watchlist-toggle"
+                    data-movie-id="{{ movie_info.id }}"
+                    data-movie-title="{{ movie_info.title }}"
+                    data-poster-url="{{ movie_info.poster_url or '' }}"
+                    data-rating="{{ movie_info.rating }}"
+                    data-year="{{ movie_info.year }}"
+                >
+                    <i class="fa-solid fa-bookmark"></i>
+                    <span id="watchlist-btn-text">{% if in_watchlist %}{{ t.in_watchlist }}{% else %}{{ t.add_to_watchlist }}{% endif %}</span>
+                </button>
+                {% else %}
+                <a href="{{ url_for('auth.login', next=request.path) }}" class="watchlist-action-btn guest-btn" title="Log in to bookmark this movie">
+                    <i class="fa-regular fa-bookmark"></i>
+                    <span>{{ t.add_to_watchlist }}</span>
+                </a>
+                {% endif %}
+
                 <a href="{{ movie_info.tmdb_url }}" target="_blank" rel="noopener noreferrer" class="tmdb-ext-btn">
                     <i class="fa-solid fa-arrow-up-right-from-square"></i>
                     <span>{{ t.view_tmdb }}</span>
@@ -167,6 +188,7 @@
 
     <!-- Review Submission Form -->
     <form id="sentiment-analysis-form" class="review-form">
+        <input type="hidden" name="movie_id" value="{{ movie_info.id }}">
         <input type="hidden" name="movie_name" value="{{ movie_info.title }}">
         
         <div class="textarea-wrapper">
@@ -380,6 +402,98 @@
         {% endif %}
     </div>
 </section>
+
+<!-- 5. TMDb Community Reviews Section -->
+{% if tmdb_reviews %}
+<section class="tmdb-community-reviews-section">
+    <div class="section-title-wrapper">
+        <div class="section-badge-pill">
+            <i class="fa-solid fa-comments"></i>
+            <span>{{ t.community_reviews }}</span>
+        </div>
+        <h2 class="sub-section-heading">{{ t.community_reviews }}</h2>
+    </div>
+
+    <div class="community-reviews-grid">
+        {% for rev in tmdb_reviews %}
+        <div class="community-review-card">
+            <div class="comm-rev-header">
+                <div class="comm-author-box">
+                    {% if rev.avatar_url %}
+                        <img src="{{ rev.avatar_url }}" alt="{{ rev.author }}" class="comm-avatar-img" onerror="this.style.display='none'">
+                    {% else %}
+                        <div class="comm-avatar-placeholder"><i class="fa-solid fa-user"></i></div>
+                    {% endif %}
+                    <div>
+                        <h4 class="comm-author-name">{{ rev.author }}</h4>
+                        <span class="comm-date">{{ rev.created_at }}</span>
+                    </div>
+                </div>
+                {% if rev.rating %}
+                <div class="comm-rating-badge">
+                    <i class="fa-solid fa-star"></i> {{ rev.rating }}/10
+                </div>
+                {% endif %}
+            </div>
+            <p class="comm-content-text">{{ rev.short_content }}</p>
+            <div class="comm-card-action">
+                <button type="button" class="btn-quick-analyze" data-review-text="{{ rev.content|replace('"', '&quot;') }}">
+                    <i class="fa-solid fa-brain"></i>
+                    <span>{{ t.analyze_this_review }}</span>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- 6. Similar Movies Showcase -->
+{% if similar_movies %}
+<section class="similar-movies-section">
+    <div class="section-title-wrapper">
+        <div class="section-badge-pill">
+            <i class="fa-solid fa-film"></i>
+            <span>{{ t.similar_movies }}</span>
+        </div>
+        <h2 class="sub-section-heading">{{ t.similar_movies }}</h2>
+    </div>
+
+    <div class="movies-catalog-grid">
+        {% for sm in similar_movies %}
+        <div class="movie-catalog-card">
+            <div class="card-poster-wrapper">
+                {% if sm.poster_url %}
+                    <img src="{{ sm.poster_url }}" alt="{{ sm.title }}" class="catalog-poster-img" loading="lazy">
+                {% else %}
+                    <div class="catalog-poster-placeholder">
+                        <i class="fa-solid fa-film"></i>
+                        <span>{{ t.no_poster }}</span>
+                    </div>
+                {% endif %}
+                {% if sm.rating and sm.rating > 0 %}
+                    <div class="card-rating-badge">
+                        <i class="fa-solid fa-star"></i> {{ sm.rating }}
+                    </div>
+                {% endif %}
+                {% if sm.year and sm.year != 'N/A' %}
+                    <div class="card-year-badge">{{ sm.year }}</div>
+                {% endif %}
+            </div>
+            <div class="card-info-content">
+                <h3 class="card-movie-title" title="{{ sm.title }}">{{ sm.title }}</h3>
+                <div class="card-action-box">
+                    <a href="{{ url_for('movie_detail', movie_id=sm.id) }}" class="card-view-btn">
+                        <span>{{ t.view_details_btn }}</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
@@ -415,73 +529,127 @@ document.addEventListener('DOMContentLoaded', function() {
     const statCompound = document.getElementById('stat-compound');
     const statWords = document.getElementById('stat-words');
 
-    // 1. Sample reviews auto-fill & run
-    samplePills.forEach(pill => {
-        pill.addEventListener('click', function() {
-            let sampleText = this.getAttribute('data-text');
-            if (sampleText.startsWith('"') && sampleText.endsWith('"')) {
-                sampleText = sampleText.substring(1, sampleText.length - 1);
-            }
-            textarea.value = sampleText;
-            textarea.focus();
-            performSentimentAnalysis(sampleText);
+        // 1. Sample reviews auto-fill & run
+        samplePills.forEach(pill => {
+            pill.addEventListener('click', function() {
+                let sampleText = this.getAttribute('data-text');
+                if (sampleText.startsWith('"') && sampleText.endsWith('"')) {
+                    sampleText = sampleText.substring(1, sampleText.length - 1);
+                }
+                textarea.value = sampleText;
+                textarea.focus();
+                performSentimentAnalysis(sampleText);
+            });
         });
-    });
 
-    // 2. Clear review
-    if (clearBtn) {
-        clearBtn.addEventListener('click', function() {
-            textarea.value = '';
-            textarea.focus();
+        // Quick analyze from community reviews
+        document.querySelectorAll('.btn-quick-analyze').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const text = this.getAttribute('data-review-text');
+                if (text) {
+                    textarea.value = text;
+                    textarea.focus();
+                    textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    performSentimentAnalysis(text);
+                }
+            });
         });
-    }
 
-    // 3. Form submit event
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const review = textarea.value.trim();
-        if (!review) return;
-        performSentimentAnalysis(review);
-    });
+        // Watchlist toggle handler
+        const watchlistBtn = document.getElementById('btn-watchlist-toggle');
+        if (watchlistBtn) {
+            watchlistBtn.addEventListener('click', function() {
+                const movieId = this.getAttribute('data-movie-id');
+                const movieTitle = this.getAttribute('data-movie-title');
+                const posterUrl = this.getAttribute('data-poster-url');
+                const rating = this.getAttribute('data-rating');
+                const year = this.getAttribute('data-year');
+                const btnText = document.getElementById('watchlist-btn-text');
 
-    function performSentimentAnalysis(review) {
-        if (!review || !review.trim()) return;
+                fetch('{{ url_for("watchlist_bp.toggle_watchlist") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        movie_id: movieId,
+                        movie_title: movieTitle,
+                        poster_url: posterUrl,
+                        rating: rating,
+                        year: year
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.in_watchlist) {
+                            watchlistBtn.classList.add('in-watchlist');
+                            btnText.textContent = '{{ t.in_watchlist }}';
+                        } else {
+                            watchlistBtn.classList.remove('in-watchlist');
+                            btnText.textContent = '{{ t.add_to_watchlist }}';
+                        }
+                    }
+                })
+                .catch(err => console.error('Watchlist toggle error:', err));
+            });
+        }
 
-        analyzeBtn.disabled = true;
-        analyzeBtnText.textContent = "{{ t.analyzing }}";
+        // 2. Clear review
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                textarea.value = '';
+                textarea.focus();
+            });
+        }
 
-        fetch("{{ url_for('analyze_review') }}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Requested-With": "XMLHttpRequest"
-            },
-            body: JSON.stringify({
-                review: review,
-                review_text: review,
-                user_review: review,
-                movie_name: "{{ movie_info.title }}"
+        // 3. Form submit event
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const review = textarea.value.trim();
+            if (!review) return;
+            performSentimentAnalysis(review);
+        });
+
+        function performSentimentAnalysis(review) {
+            if (!review || !review.trim()) return;
+
+            analyzeBtn.disabled = true;
+            analyzeBtnText.textContent = "{{ t.analyzing }}";
+
+            fetch("{{ url_for('analyze_review') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({
+                    review: review,
+                    review_text: review,
+                    user_review: review,
+                    movie_name: "{{ movie_info.title }}",
+                    movie_id: "{{ movie_info.id }}"
+                })
             })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("HTTP error " + res.status);
-            return res.json();
-        })
-        .then(response => {
-            analyzeBtn.disabled = false;
-            analyzeBtnText.textContent = "{{ t.analyze_btn }}";
+            .then(res => {
+                if (!res.ok) throw new Error("HTTP error " + res.status);
+                return res.json();
+            })
+            .then(response => {
+                analyzeBtn.disabled = false;
+                analyzeBtnText.textContent = "{{ t.analyze_btn }}";
 
-            const sentimentData = (response && response.data) ? response.data : response;
-            if (sentimentData && sentimentData.sentiment) {
-                renderSentimentData(sentimentData);
-            }
-        })
-        .catch(err => {
-            analyzeBtn.disabled = false;
-            analyzeBtnText.textContent = "{{ t.analyze_btn }}";
-            console.error("Sentiment analysis error:", err);
-        });
-    }
+                const sentimentData = (response && response.data) ? response.data : response;
+                if (sentimentData && sentimentData.sentiment) {
+                    renderSentimentData(sentimentData);
+                }
+            })
+            .catch(err => {
+                analyzeBtn.disabled = false;
+                analyzeBtnText.textContent = "{{ t.analyze_btn }}";
+                console.error("Sentiment analysis error:", err);
+            });
+        }
 
     function renderSentimentData(data) {
         resultsContainer.style.display = 'block';

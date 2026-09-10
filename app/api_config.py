@@ -33,7 +33,7 @@ def get_genres(language='en-US'):
     return []
 
 
-def search_movies(query, language='en-US'):
+def search_movies(query, language='en-US', page=1):
     """
     Searches for movies matching a keyword query and returns a list of results.
     """
@@ -46,7 +46,8 @@ def search_movies(query, language='en-US'):
         'api_key': api_key,
         'query': query.strip(),
         'language': language,
-        'include_adult': 'false'
+        'include_adult': 'false',
+        'page': page
     }
 
     try:
@@ -74,6 +75,61 @@ def search_movies(query, language='en-US'):
         return movies
     except Exception:
         return []
+
+
+def search_movies_paginated(query, language='en-US', page=1):
+    """
+    Searches TMDb and returns results with pagination metadata.
+    """
+    if not query or not query.strip():
+        return {'movies': [], 'page': 1, 'total_pages': 1, 'total_results': 0}
+
+    api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
+    search_url = f'{BASE_URL}/search/movie'
+    params = {
+        'api_key': api_key,
+        'query': query.strip(),
+        'language': language,
+        'include_adult': 'false',
+        'page': page
+    }
+
+    try:
+        resp = requests.get(search_url, params=params, timeout=8)
+        if resp.status_code != 200:
+            return {'movies': [], 'page': page, 'total_pages': 1, 'total_results': 0}
+
+        data = resp.json()
+        raw_results = data.get('results', [])
+        total_pages = min(data.get('total_pages', 1), 500)
+        total_results = data.get('total_results', len(raw_results))
+
+        movies = []
+        for m in raw_results:
+            poster_path = m.get('poster_path')
+            backdrop_path = m.get('backdrop_path')
+            movies.append({
+                'id': m.get('id'),
+                'title': m.get('title') or m.get('original_title', 'Unknown'),
+                'overview': m.get('overview') or 'No overview available.',
+                'release_date': m.get('release_date') or 'N/A',
+                'year': (m.get('release_date') or '')[:4] or 'N/A',
+                'rating': round(m.get('vote_average', 0.0), 1),
+                'vote_count': m.get('vote_count', 0),
+                'popularity': round(m.get('popularity', 0.0), 1),
+                'poster_url': f'{IMAGE_BASE_URL}{poster_path}' if poster_path else None,
+                'backdrop_url': f'{BACKDROP_BASE_URL}{backdrop_path}' if backdrop_path else None,
+            })
+
+        return {
+            'movies': movies,
+            'page': page,
+            'total_pages': total_pages,
+            'total_results': total_results
+        }
+    except Exception:
+        return {'movies': [], 'page': page, 'total_pages': 1, 'total_results': 0}
+
 
 
 def get_movies_by_category(category='popular', language='en-US', page=1):
@@ -315,3 +371,185 @@ def get_movie_info(movie_name, language='en-US'):
     if movies:
         return get_movie_details_by_id(movies[0]['id'], language=language)
     return None
+
+
+def get_movies_by_category_paginated(category='popular', language='en-US', page=1):
+    """
+    Fetch movies by category with full pagination metadata.
+    """
+    valid_categories = ['popular', 'now_playing', 'upcoming', 'top_rated']
+    if category not in valid_categories:
+        category = 'popular'
+
+    api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
+    url = f'{BASE_URL}/movie/{category}'
+    params = {'api_key': api_key, 'language': language, 'page': page}
+
+    try:
+        resp = requests.get(url, params=params, timeout=8)
+        if resp.status_code != 200:
+            return {'movies': [], 'page': page, 'total_pages': 1, 'total_results': 0}
+
+        data = resp.json()
+        raw_results = data.get('results', [])
+        total_pages = min(data.get('total_pages', 1), 500)
+        total_results = data.get('total_results', len(raw_results))
+
+        movies = []
+        for m in raw_results:
+            poster_path = m.get('poster_path')
+            backdrop_path = m.get('backdrop_path')
+            movies.append({
+                'id': m.get('id'),
+                'title': m.get('title') or m.get('original_title', 'Unknown'),
+                'overview': m.get('overview') or 'No overview available.',
+                'release_date': m.get('release_date') or 'N/A',
+                'year': (m.get('release_date') or '')[:4] or 'N/A',
+                'rating': round(m.get('vote_average', 0.0), 1),
+                'vote_count': m.get('vote_count', 0),
+                'popularity': round(m.get('popularity', 0.0), 1),
+                'poster_url': f'{IMAGE_BASE_URL}{poster_path}' if poster_path else None,
+                'backdrop_url': f'{BACKDROP_BASE_URL}{backdrop_path}' if backdrop_path else None,
+            })
+        return {
+            'movies': movies,
+            'page': page,
+            'total_pages': total_pages,
+            'total_results': total_results
+        }
+    except Exception:
+        return {'movies': [], 'page': page, 'total_pages': 1, 'total_results': 0}
+
+
+def get_movies_by_genre_paginated(genre_id, language='en-US', page=1):
+    """
+    Fetch movies by genre with pagination metadata.
+    """
+    api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
+    url = f'{BASE_URL}/discover/movie'
+    params = {
+        'api_key': api_key,
+        'with_genres': str(genre_id),
+        'language': language,
+        'sort_by': 'popularity.desc',
+        'include_adult': 'false',
+        'page': page
+    }
+
+    try:
+        resp = requests.get(url, params=params, timeout=8)
+        if resp.status_code != 200:
+            return {'movies': [], 'page': page, 'total_pages': 1, 'total_results': 0}
+
+        data = resp.json()
+        raw_results = data.get('results', [])
+        total_pages = min(data.get('total_pages', 1), 500)
+        total_results = data.get('total_results', len(raw_results))
+
+        movies = []
+        for m in raw_results:
+            poster_path = m.get('poster_path')
+            backdrop_path = m.get('backdrop_path')
+            movies.append({
+                'id': m.get('id'),
+                'title': m.get('title') or m.get('original_title', 'Unknown'),
+                'overview': m.get('overview') or 'No overview available.',
+                'release_date': m.get('release_date') or 'N/A',
+                'year': (m.get('release_date') or '')[:4] or 'N/A',
+                'rating': round(m.get('vote_average', 0.0), 1),
+                'vote_count': m.get('vote_count', 0),
+                'popularity': round(m.get('popularity', 0.0), 1),
+                'poster_url': f'{IMAGE_BASE_URL}{poster_path}' if poster_path else None,
+                'backdrop_url': f'{BACKDROP_BASE_URL}{backdrop_path}' if backdrop_path else None,
+            })
+        return {
+            'movies': movies,
+            'page': page,
+            'total_pages': total_pages,
+            'total_results': total_results
+        }
+    except Exception:
+        return {'movies': [], 'page': page, 'total_pages': 1, 'total_results': 0}
+
+
+def get_similar_movies(movie_id, language='en-US', limit=6):
+    """
+    Fetches recommended or similar movies for a given movie ID.
+    """
+    if not movie_id:
+        return []
+
+    api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
+    for endpoint in ['recommendations', 'similar']:
+        url = f'{BASE_URL}/movie/{movie_id}/{endpoint}'
+        try:
+            resp = requests.get(url, params={'api_key': api_key, 'language': language}, timeout=6)
+            if resp.status_code == 200:
+                raw = resp.json().get('results', [])
+                if raw:
+                    movies = []
+                    for m in raw[:limit]:
+                        poster_path = m.get('poster_path')
+                        backdrop_path = m.get('backdrop_path')
+                        movies.append({
+                            'id': m.get('id'),
+                            'title': m.get('title') or m.get('original_title', 'Unknown'),
+                            'overview': m.get('overview', ''),
+                            'year': (m.get('release_date') or '')[:4] or 'N/A',
+                            'rating': round(m.get('vote_average', 0.0), 1),
+                            'poster_url': f'{IMAGE_BASE_URL}{poster_path}' if poster_path else None,
+                            'backdrop_url': f'{BACKDROP_BASE_URL}{backdrop_path}' if backdrop_path else None,
+                        })
+                    return movies
+        except Exception:
+            pass
+    return []
+
+
+def get_movie_reviews_tmdb(movie_id, language='en-US', limit=4):
+    """
+    Fetches community reviews for a movie from TMDb.
+    """
+    if not movie_id:
+        return []
+
+    api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
+    url = f'{BASE_URL}/movie/{movie_id}/reviews'
+
+    try:
+        resp = requests.get(url, params={'api_key': api_key, 'language': language}, timeout=6)
+        if resp.status_code == 200:
+            raw = resp.json().get('results', [])
+            reviews = []
+            for r in raw[:limit]:
+                author = r.get('author') or 'Anonymous Reviewer'
+                content = r.get('content') or ''
+                created_at = (r.get('created_at') or '')[:10]
+                author_details = r.get('author_details', {})
+                user_rating = author_details.get('rating')
+                avatar_path = author_details.get('avatar_path')
+                avatar_url = None
+                if avatar_path:
+                    if avatar_path.startswith('/http'):
+                        avatar_url = avatar_path[1:]
+                    elif avatar_path.startswith('http'):
+                        avatar_url = avatar_path
+                    else:
+                        avatar_url = f'{IMAGE_BASE_URL}{avatar_path}'
+
+                short_content = (content[:260] + '...') if len(content) > 260 else content
+
+                reviews.append({
+                    'id': r.get('id'),
+                    'author': author,
+                    'content': content,
+                    'short_content': short_content,
+                    'created_at': created_at,
+                    'rating': user_rating,
+                    'avatar_url': avatar_url,
+                    'url': r.get('url')
+                })
+            return reviews
+    except Exception:
+        pass
+    return []

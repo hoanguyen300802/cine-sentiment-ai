@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t.my_reviews }} | {{ t.app_name }}{% endblock %}
+
+{% block content %}
+<div class="results-header-section">
+    <a href="{{ url_for('index') }}" class="back-link-btn">
+        <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_search }}
+    </a>
+
+    <div class="results-title-box">
+        <span class="results-category-tag">
+            <i class="fa-solid fa-brain"></i> {{ t.my_reviews }}
+        </span>
+        <h1 class="results-main-title">{{ t.my_reviews }}</h1>
+        <p class="results-count-text">{{ total }} reviews analyzed by you</p>
+    </div>
+</div>
+
+<!-- Metrics Overview -->
+<div class="reviews-metrics-bar">
+    <div class="metric-pill">
+        <span class="metric-label">Total Analyzed:</span>
+        <strong class="metric-val">{{ total }}</strong>
+    </div>
+    <div class="metric-pill pos">
+        <i class="fa-solid fa-face-smile"></i>
+        <span>{{ pos_count }} {{ t.positive }}</span>
+    </div>
+    <div class="metric-pill neu">
+        <i class="fa-solid fa-face-meh"></i>
+        <span>{{ neu_count }} {{ t.neutral }}</span>
+    </div>
+    <div class="metric-pill neg">
+        <i class="fa-solid fa-face-frown"></i>
+        <span>{{ neg_count }} {{ t.negative }}</span>
+    </div>
+    <div class="metric-pill avg">
+        <span>Avg Polarity:</span>
+        <strong class="metric-val">{{ avg_polarity }}</strong>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="reviews-filter-tabs">
+    <a href="{{ url_for('watchlist_bp.my_reviews', filter='all') }}" class="filter-tab-btn {% if current_filter == 'all' %}active{% endif %}">
+        {{ t.filter_all }} ({{ total }})
+    </a>
+    <a href="{{ url_for('watchlist_bp.my_reviews', filter='positive') }}" class="filter-tab-btn pos {% if current_filter == 'positive' %}active{% endif %}">
+        🟢 {{ t.filter_positive }} ({{ pos_count }})
+    </a>
+    <a href="{{ url_for('watchlist_bp.my_reviews', filter='neutral') }}" class="filter-tab-btn neu {% if current_filter == 'neutral' %}active{% endif %}">
+        🟡 {{ t.filter_neutral }} ({{ neu_count }})
+    </a>
+    <a href="{{ url_for('watchlist_bp.my_reviews', filter='negative') }}" class="filter-tab-btn neg {% if current_filter == 'negative' %}active{% endif %}">
+        🔴 {{ t.filter_negative }} ({{ neg_count }})
+    </a>
+</div>
+
+{% if reviews %}
+<div class="reviews-timeline-grid">
+    {% for r in reviews %}
+    <div class="review-history-card {{ r.sentiment }}" id="review-card-{{ r.id }}">
+        <div class="review-card-top">
+            <div class="review-movie-info">
+                {% if r.movie_id %}
+                    <a href="{{ url_for('movie_detail', movie_id=r.movie_id) }}" class="review-movie-link">
+                        <i class="fa-solid fa-film"></i>
+                        <span>{{ r.movie_title or 'Movie #' ~ r.movie_id }}</span>
+                    </a>
+                {% else %}
+                    <span class="review-general-badge">
+                        <i class="fa-solid fa-comment-dots"></i> {{ r.movie_title or 'General Review' }}
+                    </span>
+                {% endif %}
+                <span class="review-date-badge">
+                    <i class="fa-regular fa-clock"></i> {{ r.created_at.strftime('%d/%m/%Y %H:%M') }}
+                </span>
+            </div>
+
+            <div class="review-badge-right">
+                <span class="sentiment-tag {{ r.sentiment }}">
+                    {% if r.sentiment == 'positive' %}
+                        <i class="fa-solid fa-face-smile"></i> {{ t.positive }}
+                    {% elif r.sentiment == 'negative' %}
+                        <i class="fa-solid fa-face-frown"></i> {{ t.negative }}
+                    {% else %}
+                        <i class="fa-solid fa-face-meh"></i> {{ t.neutral }}
+                    {% endif %}
+                </span>
+                <span class="polarity-score-badge">{{ (r.polarity > 0 and '+') or '' }}{{ r.polarity }}</span>
+                <button type="button" class="btn-delete-review" onclick="deleteReview({{ r.id }})" title="{{ t.delete_review }}">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Review Text -->
+        <p class="review-text-body">"{{ r.review_text }}"</p>
+
+        <!-- NLP Meta -->
+        <div class="review-nlp-summary">
+            {% if r.tone_description %}
+            <span class="nlp-chip"><i class="fa-solid fa-masks-theater"></i> {{ r.tone_description }}</span>
+            {% endif %}
+            {% if r.detected_lang_name %}
+            <span class="nlp-chip"><i class="fa-solid fa-language"></i> {{ r.detected_lang_name }}</span>
+            {% endif %}
+            <span class="nlp-chip">Confidence: Pos {{ r.positive_pct }}% | Neu {{ r.neutral_pct }}% | Neg {{ r.negative_pct }}%</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state-box">
+    <div class="empty-icon-circle">
+        <i class="fa-solid fa-brain"></i>
+    </div>
+    <h3 class="empty-title">{{ t.my_reviews }}</h3>
+    <p class="empty-desc">{{ t.reviews_empty }}</p>
+    <a href="{{ url_for('index') }}" class="primary-cta-btn">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <span>{{ t.explore_movies }}</span>
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function deleteReview(reviewId) {
+    if (!confirm('{{ t.confirm_delete }}')) return;
+
+    fetch(`{{ url_for("watchlist_bp.delete_review", review_id=0) }}`.replace('/0', '/' + reviewId), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const card = document.getElementById('review-card-' + reviewId);
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => card.remove(), 250);
+            }
+        }
+    })
+    .catch(err => console.error('Error deleting review:', err));
+}
+</script>
+{% endblock %}
