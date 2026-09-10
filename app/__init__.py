@@ -55,7 +55,7 @@ from app.watchlist_routes import watchlist_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(watchlist_bp)
 
-# Create database tables automatically & safe column migration
+# Create database tables automatically, safe column migration & admin auto-seeding
 with app.app_context():
     db.create_all()
     try:
@@ -65,6 +65,29 @@ with app.app_context():
             conn.commit()
     except Exception:
         pass  # Column already exists or table was just created
+
+    # Auto-seed initial Administrator account for production/Render
+    try:
+        from app.models import User
+        admin_account = User.query.filter(
+            (User.username == 'admin') | (User.email == 'admin@cinesentiment.ai')
+        ).first()
+        if not admin_account:
+            admin_account = User(
+                username='admin',
+                email='admin@cinesentiment.ai',
+                display_name='Administrator',
+                is_admin=True
+            )
+            admin_account.set_password('Admin123@')
+            db.session.add(admin_account)
+            db.session.commit()
+            print("[INFO] Initial Administrator account seeded successfully.")
+        elif not admin_account.is_admin:
+            admin_account.is_admin = True
+            db.session.commit()
+    except Exception as e:
+        print(f"[WARN] Admin initialization check skipped: {e}")
 
 # Import routes after app initialization to prevent circular dependencies
 from app import routes
