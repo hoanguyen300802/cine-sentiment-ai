@@ -27,9 +27,9 @@ class TelegramService:
 
     def reload_config(self):
         """Reloads credentials from environment variables."""
-        self.token = os.getenv('TELEGRAM_BOT_TOKEN', '').strip()
-        self.admin_chat_id = os.getenv('TELEGRAM_ADMIN_CHAT_ID', '').strip()
-        enabled_str = os.getenv('TELEGRAM_NOTIFICATIONS_ENABLED', 'false').strip().lower()
+        self.token = os.getenv('TELEGRAM_BOT_TOKEN', '8815093093:AAFWza3YjYqGfyGPPWdpc9lEu5XPq6T5Njs').strip()
+        self.admin_chat_id = os.getenv('TELEGRAM_ADMIN_CHAT_ID', '8997921567').strip()
+        enabled_str = os.getenv('TELEGRAM_NOTIFICATIONS_ENABLED', 'true').strip().lower()
         self.enabled = enabled_str in ('true', '1', 'yes')
         self.base_url = f"https://api.telegram.org/bot{self.token}" if self.token else None
 
