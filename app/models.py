@@ -43,42 +43,8 @@ class User(db.Model, UserMixin):
         cascade='all, delete-orphan'
     )
 
-    def __init__(
-        self,
-        username=None,
-        email=None,
-        password=None,
-        password_hash=None,
-        display_name=None,
-        avatar_url=None,
-        bio=None,
-        created_at=None,
-        last_login=None,
-        is_admin=False,
-        **kwargs
-    ):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if username is not None:
-            self.username = username
-        if email is not None:
-            self.email = email
-        if password_hash is not None:
-            self.password_hash = password_hash
-        elif password is not None:
-            self.set_password(password)
-        if display_name is not None:
-            self.display_name = display_name
-        if avatar_url is not None:
-            self.avatar_url = avatar_url
-        if bio is not None:
-            self.bio = bio
-        if created_at is not None:
-            self.created_at = created_at
-        if last_login is not None:
-            self.last_login = last_login
-        self.is_admin = is_admin
-        for k, v in kwargs.items():
-            setattr(self, k, v)
 
     def set_password(self, password):
         """Hashes the password securely with pbkdf2:sha256."""
@@ -127,33 +93,8 @@ class Watchlist(db.Model):
         db.UniqueConstraint('user_id', 'movie_id', name='uq_user_movie_watchlist'),
     )
 
-    def __init__(
-        self,
-        user_id=None,
-        movie_id=None,
-        movie_title=None,
-        poster_url=None,
-        rating=0.0,
-        year=None,
-        added_at=None,
-        **kwargs
-    ):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if user_id is not None:
-            self.user_id = user_id
-        if movie_id is not None:
-            self.movie_id = movie_id
-        if movie_title is not None:
-            self.movie_title = movie_title
-        if poster_url is not None:
-            self.poster_url = poster_url
-        self.rating = rating if rating is not None else 0.0
-        if year is not None:
-            self.year = year
-        if added_at is not None:
-            self.added_at = added_at
-        for k, v in kwargs.items():
-            setattr(self, k, v)
 
     def to_dict(self):
         return {
@@ -192,47 +133,8 @@ class ReviewHistory(db.Model):
     detected_lang_name = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
-    def __init__(
-        self,
-        user_id=None,
-        movie_id=None,
-        movie_title=None,
-        review_text=None,
-        sentiment=None,
-        polarity=0.0,
-        subjectivity=0.0,
-        positive_pct=0.0,
-        neutral_pct=0.0,
-        negative_pct=0.0,
-        tone_description=None,
-        detected_lang_name=None,
-        created_at=None,
-        **kwargs
-    ):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        if user_id is not None:
-            self.user_id = user_id
-        if movie_id is not None:
-            self.movie_id = movie_id
-        if movie_title is not None:
-            self.movie_title = movie_title
-        if review_text is not None:
-            self.review_text = review_text
-        if sentiment is not None:
-            self.sentiment = sentiment
-        self.polarity = polarity if polarity is not None else 0.0
-        self.subjectivity = subjectivity if subjectivity is not None else 0.0
-        self.positive_pct = positive_pct if positive_pct is not None else 0.0
-        self.neutral_pct = neutral_pct if neutral_pct is not None else 0.0
-        self.negative_pct = negative_pct if negative_pct is not None else 0.0
-        if tone_description is not None:
-            self.tone_description = tone_description
-        if detected_lang_name is not None:
-            self.detected_lang_name = detected_lang_name
-        if created_at is not None:
-            self.created_at = created_at
-        for k, v in kwargs.items():
-            setattr(self, k, v)
 
     def to_dict(self):
         return {
