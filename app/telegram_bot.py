@@ -97,7 +97,7 @@ class TelegramService:
 
     def notify_sentiment_alert(self, movie_title, review_text, sentiment_data, username=None):
         """
-        Notifies admin when an extreme or notable sentiment review is submitted.
+        Notifies admin when a sentiment review (positive, negative, or neutral) is submitted.
         """
         if not self.enabled and not (self.token and self.admin_chat_id):
             return False, "Notifications disabled"
@@ -106,14 +106,21 @@ class TelegramService:
         polarity = sentiment_data.get('polarity', 0.0)
         lang_name = sentiment_data.get('detected_lang_name', 'Unknown')
         tone = sentiment_data.get('tone_description', '')
+        neutral_pct = sentiment_data.get('neutral_pct')
 
-        # Select appropriate badge
+        # Select appropriate badge and title
         if sentiment == 'POSITIVE':
             icon = '🟢 😍'
+            title = 'Positive Review Analyzed'
+            extra_metric = ""
         elif sentiment == 'NEGATIVE':
             icon = '🔴 😡'
+            title = 'Negative Review Analyzed'
+            extra_metric = ""
         else:
             icon = '🟡 😐'
+            title = 'Neutral Review Analyzed'
+            extra_metric = f" | Neutral: <code>{neutral_pct}%</code>" if neutral_pct is not None else ""
 
         excerpt = (review_text[:280] + '...') if len(review_text) > 280 else review_text
         safe_excerpt = html.escape(excerpt)
@@ -121,15 +128,46 @@ class TelegramService:
         safe_user = html.escape(username or 'Guest Visitor')
 
         msg = (
-            f"🧠 <b>CineSentiment AI — Review Analyzed</b> {icon}\n"
+            f"🧠 <b>CineSentiment AI — {title}</b> {icon}\n"
             "━━━━━━━━━━━━━━━━━━━━━━\n"
             f"🎬 <b>Movie:</b> <b>{safe_movie}</b>\n"
             f"👤 <b>Reviewer:</b> {safe_user}\n"
-            f"📊 <b>Sentiment:</b> <b>{sentiment}</b> (Polarity: <code>{polarity:+.2f}</code>)\n"
+            f"📊 <b>Sentiment:</b> <b>{sentiment}</b> (Polarity: <code>{polarity:+.2f}</code>{extra_metric})\n"
             f"🌐 <b>Language:</b> {lang_name}\n"
             f"🎭 <b>Tone:</b> {tone}\n"
             f"💬 <b>Review:</b>\n<i>\"{safe_excerpt}\"</i>\n"
             "━━━━━━━━━━━━━━━━━━━━━━"
+        )
+        return self.send_message(msg)
+
+    def notify_neutral_alert(self, movie_title, review_text, sentiment_data, username=None):
+        """
+        Specifically notifies admin when a neutral sentiment review is submitted.
+        """
+        if not self.enabled and not (self.token and self.admin_chat_id):
+            return False, "Notifications disabled"
+
+        polarity = sentiment_data.get('polarity', 0.0)
+        lang_name = sentiment_data.get('detected_lang_name', 'Unknown')
+        tone = sentiment_data.get('tone_description', 'Balanced / Neutral')
+        neutral_pct = sentiment_data.get('neutral_pct', 0.0)
+
+        excerpt = (review_text[:280] + '...') if len(review_text) > 280 else review_text
+        safe_excerpt = html.escape(excerpt)
+        safe_movie = html.escape(movie_title or 'General Review')
+        safe_user = html.escape(username or 'Guest Visitor')
+
+        msg = (
+            "⚖️ <b>CineSentiment AI — Neutral Review Detected</b> 🟡 😐\n"
+            "━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"🎬 <b>Movie:</b> <b>{safe_movie}</b>\n"
+            f"👤 <b>Reviewer:</b> {safe_user}\n"
+            f"📊 <b>Sentiment:</b> <b>NEUTRAL</b> (Polarity: <code>{polarity:+.2f}</code> | Neutral: <code>{neutral_pct}%</code>)\n"
+            f"🌐 <b>Language:</b> {lang_name}\n"
+            f"🎭 <b>Tone:</b> {tone}\n"
+            f"💬 <b>Review:</b>\n<i>\"{safe_excerpt}\"</i>\n"
+            "━━━━━━━━━━━━━━━━━━━━━━\n"
+            "ℹ️ <i>Neutral feedback received for sentiment tracking!</i>"
         )
         return self.send_message(msg)
 

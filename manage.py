@@ -102,6 +102,34 @@ if __name__ == '__main__':
                 print("Cancelled.")
         sys.exit(0)
 
+    # CLI Utility: Test Telegram Neutral Comment Alert
+    elif args and args[0] == 'test-neutral-alert':
+        with app.app_context():
+            from app.telegram_bot import telegram_bot
+            from app.sentiment_analysis import analyze_sentiment
+            sample_text = args[1] if len(args) > 1 else "Phim xem bình thường, nội dung tạm ổn, không quá xuất sắc."
+            movie_title = args[2] if len(args) > 2 else "Inception (Test)"
+            res = analyze_sentiment(sample_text)
+            print("=" * 60)
+            print(" TESTING TELEGRAM NEUTRAL REVIEW NOTIFICATION")
+            print("=" * 60)
+            print(f" Movie Title : {movie_title}")
+            print(f" Review Text : {sample_text}")
+            print(f" Sentiment   : {res.get('sentiment')}")
+            print(f" Polarity    : {res.get('polarity')}")
+            print(f" Confidence  : Neu {res.get('neutral_pct')}% | Pos {res.get('positive_pct')}% | Neg {res.get('negative_pct')}%")
+            print("-" * 60)
+            success, msg = telegram_bot.notify_neutral_alert(
+                movie_title=movie_title,
+                review_text=sample_text,
+                sentiment_data=res,
+                username="Admin Tester"
+            )
+            print(f" Telegram Dispatch: {'[SUCCESS]' if success else '[FAILED]'}")
+            print(f" Server Message   : {msg}")
+            print("=" * 60)
+        sys.exit(0)
+
     # Default: Start Development Server
     print("=" * 60)
     print(" CineSentiment AI - Movie Discovery & Sentiment Intelligence ")

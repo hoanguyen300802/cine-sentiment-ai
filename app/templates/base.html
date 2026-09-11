@@ -28,7 +28,6 @@
                             <i class="fa-solid fa-clapperboard"></i>
                         </div>
                         <span class="brand-title">{{ t.app_name }}</span>
-                        <span class="brand-badge">AI 2.0</span>
                     </a>
 
                     <!-- Navigation Menu -->
@@ -63,24 +62,31 @@
                             </div>
                         </div>
 
-                        <!-- TV Shows -->
-                        <a href="{{ url_for('genre_movies', genre_id=10770) }}" class="nav-menu-link">
-                            <span>{{ t.nav_tv_shows }}</span>
-                        </a>
-
-                        <!-- People -->
-                        <a href="{{ url_for('people') }}" class="nav-menu-link">
-                            <span>{{ t.nav_people }}</span>
-                        </a>
-
-                        <!-- Awards -->
-                        <a href="{{ url_for('awards') }}" class="nav-menu-link">
-                            <span>{{ t.nav_awards }}</span>
-                        </a>
+                        <!-- Explore Dropdown (TV Shows, People, Awards) -->
+                        <div class="nav-dropdown-wrapper">
+                            <button type="button" class="nav-menu-link nav-dropdown-btn">
+                                <span>{{ t.nav_more }}</span>
+                                <i class="fa-solid fa-chevron-down nav-chevron-icon"></i>
+                            </button>
+                            <div class="nav-dropdown-menu">
+                                <a href="{{ url_for('genre_movies', genre_id=10770) }}" class="dropdown-nav-item">
+                                    <i class="fa-solid fa-tv"></i>
+                                    <span>{{ t.nav_tv_shows }}</span>
+                                </a>
+                                <a href="{{ url_for('people') }}" class="dropdown-nav-item">
+                                    <i class="fa-solid fa-users"></i>
+                                    <span>{{ t.nav_people }}</span>
+                                </a>
+                                <a href="{{ url_for('awards') }}" class="dropdown-nav-item">
+                                    <i class="fa-solid fa-trophy"></i>
+                                    <span>{{ t.nav_awards }}</span>
+                                </a>
+                            </div>
+                        </div>
 
                         <!-- Watchlist Link -->
                         {% if current_user.is_authenticated %}
-                        <a href="{{ url_for('watchlist_bp.view_watchlist') }}" class="nav-menu-link nav-watchlist-link">
+                        <a href="{{ url_for('watchlist_bp.view_watchlist') }}" class="nav-menu-link nav-watchlist-link" title="{{ t.my_watchlist }}">
                             <i class="fa-solid fa-bookmark" style="color: var(--accent-cyan);"></i>
                             <span>{{ t.my_watchlist }}</span>
                             {% if user_watchlist_count > 0 %}
@@ -88,12 +94,6 @@
                             {% endif %}
                         </a>
                         {% endif %}
-
-                        <!-- GitHub Link -->
-                        <a href="https://github.com/hoanguyen300802/cine-sentiment-ai" target="_blank" rel="noopener noreferrer" class="nav-menu-link nav-github-link" title="GitHub Repository">
-                            <i class="fa-brands fa-github"></i>
-                            <span>GitHub</span>
-                        </a>
                     </nav>
                 </div>
 
@@ -116,9 +116,14 @@
                     </div>
 
                     <!-- Dark / Light Theme Toggle -->
-                    <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" title="{{ t.theme_toggle }}">
+                    <button class="theme-toggle-btn" id="theme-toggle-btn" type="button" title="{{ t.theme_toggle }}" aria-label="{{ t.theme_toggle }}">
                         <i class="fa-solid fa-moon" id="theme-icon"></i>
                     </button>
+
+                    <!-- GitHub Repository Icon Button -->
+                    <a href="https://github.com/hoanguyen300802/cine-sentiment-ai" target="_blank" rel="noopener noreferrer" class="nav-icon-btn" title="GitHub Repository" aria-label="GitHub Repository">
+                        <i class="fa-brands fa-github"></i>
+                    </a>
 
                     <!-- Authentication & User Navigation -->
                     {% if current_user.is_authenticated %}
@@ -193,9 +198,9 @@
         <!-- Flash Messages Notification Container -->
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
-            <div class="flash-messages-wrapper">
+            <div class="flash-messages-wrapper" id="flash-container">
               {% for category, message in messages %}
-                <div class="flash-banner flash-{{ category }}">
+                <div class="flash-banner flash-{{ category }}" role="alert">
                   <div class="flash-icon-box">
                     {% if category == 'success' %}
                       <i class="fa-solid fa-circle-check"></i>
@@ -208,9 +213,10 @@
                     {% endif %}
                   </div>
                   <div class="flash-message-text">{{ message }}</div>
-                  <button type="button" class="flash-close-btn" onclick="this.closest('.flash-banner').remove();" aria-label="Close message">
+                  <button type="button" class="flash-close-btn" aria-label="Close message">
                     <i class="fa-solid fa-xmark"></i>
                   </button>
+                  <div class="flash-timer-bar"></div>
                 </div>
               {% endfor %}
             </div>
@@ -317,6 +323,49 @@
                     userWrapper.classList.remove('active');
                 });
             }
+
+            // Auto-dismiss Flash Messages (Registration, Login, Logout, Alerts)
+            const flashBanners = document.querySelectorAll('.flash-banner');
+            flashBanners.forEach(function(banner) {
+                let timer = null;
+                const autoDismissDuration = 4000; // 4 seconds
+
+                function dismiss() {
+                    banner.classList.add('flash-dismissing');
+                    setTimeout(function() {
+                        banner.remove();
+                        const container = document.getElementById('flash-container');
+                        if (container && container.children.length === 0) {
+                            container.remove();
+                        }
+                    }, 400);
+                }
+
+                timer = setTimeout(dismiss, autoDismissDuration);
+
+                // Pause timer on hover
+                banner.addEventListener('mouseenter', function() {
+                    clearTimeout(timer);
+                    const bar = banner.querySelector('.flash-timer-bar');
+                    if (bar) bar.style.animationPlayState = 'paused';
+                });
+
+                banner.addEventListener('mouseleave', function() {
+                    timer = setTimeout(dismiss, 1500);
+                    const bar = banner.querySelector('.flash-timer-bar');
+                    if (bar) bar.style.animationPlayState = 'running';
+                });
+
+                // Manual close button click
+                const closeBtn = banner.querySelector('.flash-close-btn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        clearTimeout(timer);
+                        dismiss();
+                    });
+                }
+            });
         })();
     </script>
     {% block extra_scripts %}{% endblock %}

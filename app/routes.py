@@ -307,10 +307,17 @@ def analyze_review():
             db.session.commit()
             saved_review_id = history_entry.id
 
-            # Trigger Telegram alert for extreme or significant reviews
-            polarity = result.get('polarity', 0.0)
-            if abs(polarity) >= 0.5:
-                username = current_user.username if current_user.is_authenticated else "Guest User"
+            # Trigger Telegram alert for analyzed reviews (positive, negative, and neutral)
+            username = current_user.username if current_user.is_authenticated else "Guest User"
+            sentiment = result.get('sentiment', 'neutral').lower()
+            if sentiment == 'neutral':
+                telegram_bot.notify_neutral_alert(
+                    movie_title=movie_title,
+                    review_text=review_text,
+                    sentiment_data=result,
+                    username=username
+                )
+            else:
                 telegram_bot.notify_sentiment_alert(
                     movie_title=movie_title,
                     review_text=review_text,
