@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block title %}{{ person.name }} | {{ t.app_name }}{% endblock %}
+
+{% block content %}
+<div class="person-detail-page">
+    <!-- Back Navigation -->
+    <div class="results-header-section" style="margin-bottom: 2rem;">
+        <a href="{{ url_for('people') }}" class="back-link-btn">
+            <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_people }}
+        </a>
+    </div>
+
+    <!-- Hero Profile Section -->
+    <section class="person-hero-card">
+        <div class="person-hero-avatar-col">
+            {% if person.profile_url %}
+                <img src="{{ person.profile_url }}" alt="{{ person.name }}" class="person-hero-avatar" loading="eager">
+            {% else %}
+                <div class="person-hero-placeholder">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            {% endif %}
+
+            <div class="person-popularity-banner">
+                <i class="fa-solid fa-fire"></i>
+                <span>{{ t.popularity }}: <strong>{{ person.popularity }}</strong></span>
+            </div>
+        </div>
+
+        <div class="person-hero-info-col">
+            <div class="person-hero-header">
+                <span class="person-hero-dept-badge">{{ person.department }}</span>
+                <h1 class="person-hero-name">{{ person.name }}</h1>
+            </div>
+
+            <!-- Metadata Chips -->
+            <div class="person-meta-chips">
+                {% if person.birthday %}
+                <div class="person-meta-chip">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span><strong>{{ t.born }}:</strong> {{ person.birthday }}</span>
+                </div>
+                {% endif %}
+
+                {% if person.deathday %}
+                <div class="person-meta-chip">
+                    <i class="fa-solid fa-cross"></i>
+                    <span><strong>{{ t.died }}:</strong> {{ person.deathday }}</span>
+                </div>
+                {% endif %}
+
+                {% if person.place_of_birth %}
+                <div class="person-meta-chip">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span><strong>{{ t.place_of_birth }}:</strong> {{ person.place_of_birth }}</span>
+                </div>
+                {% endif %}
+
+                <a href="{{ person.tmdb_url }}" target="_blank" rel="noopener noreferrer" class="person-meta-chip tmdb-chip" title="TMDb Profile">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <span>{{ t.view_tmdb }}</span>
+                </a>
+            </div>
+
+            <!-- Biography -->
+            <div class="person-bio-box">
+                <h2 class="person-bio-heading">
+                    <i class="fa-solid fa-book-open"></i> {{ t.biography }}
+                </h2>
+                {% if person.biography %}
+                    <div class="person-bio-text">
+                        {{ person.biography | replace('\n\n', '<br><br>') | safe }}
+                    </div>
+                {% else %}
+                    <p class="person-bio-empty">{{ t.no_biography }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Filmography Section -->
+    <section class="person-filmography-section">
+        {% set is_director = (person.department == 'Directing' or (person.directed_movies and not person.acted_movies)) %}
+
+        <div class="filmography-tabs-header">
+            <h2 class="filmography-main-title">
+                <i class="fa-solid fa-film"></i> Tác Phẩm Điện Ảnh
+            </h2>
+
+            <div class="filmography-tab-pills" role="tablist">
+                {% if person.directed_movies %}
+                <button 
+                    type="button" 
+                    class="filmography-tab-btn {% if is_director %}active{% endif %}" 
+                    data-tab="directed-tab-pane"
+                    id="tab-directed"
+                    role="tab"
+                    aria-selected="{% if is_director %}true{% else %}false{% endif %}"
+                >
+                    <i class="fa-solid fa-video"></i>
+                    <span>{{ t.directed_movies }} ({{ person.directed_movies|length }})</span>
+                </button>
+                {% endif %}
+
+                {% if person.acted_movies %}
+                <button 
+                    type="button" 
+                    class="filmography-tab-btn {% if not is_director or not person.directed_movies %}active{% endif %}" 
+                    data-tab="acted-tab-pane"
+                    id="tab-acted"
+                    role="tab"
+                    aria-selected="{% if not is_director or not person.directed_movies %}true{% else %}false{% endif %}"
+                >
+                    <i class="fa-solid fa-masks-theater"></i>
+                    <span>{{ t.acted_movies }} ({{ person.acted_movies|length }})</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Directed Movies Tab Pane -->
+        {% if person.directed_movies %}
+        <div id="directed-tab-pane" class="filmography-tab-pane {% if is_director %}active{% endif %}" role="tabpanel">
+            <div class="movies-catalog-grid">
+                {% for m in person.directed_movies %}
+                <div class="movie-catalog-card">
+                    <div class="card-poster-wrapper">
+                        {% if m.poster_url %}
+                            <img src="{{ m.poster_url }}" alt="{{ m.title }}" class="catalog-poster-img" loading="lazy">
+                        {% else %}
+                            <div class="catalog-poster-placeholder">
+                                <i class="fa-solid fa-film"></i>
+                                <span>{{ t.no_poster }}</span>
+                            </div>
+                        {% endif %}
+
+                        <div class="card-rating-badge">
+                            ⭐ {{ m.rating }}
+                        </div>
+
+                        {% if m.year and m.year != 'N/A' %}
+                        <div class="card-year-badge">
+                            {{ m.year }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-info-content">
+                        <span class="role-badge director-role-badge">
+                            <i class="fa-solid fa-clapperboard"></i> {{ t.directed_movies }}
+                        </span>
+                        <h3 class="card-movie-title" title="{{ m.title }}">
+                            {{ m.title }}
+                        </h3>
+
+                        {% if m.overview %}
+                        <p class="card-movie-overview">
+                            {{ m.overview }}
+                        </p>
+                        {% endif %}
+
+                        <div class="card-action-box">
+                            <a href="{{ url_for('movie_detail', movie_id=m.id) }}" class="card-view-btn">
+                                <span>{{ t.view_details_btn }}</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Acted Movies Tab Pane -->
+        {% if person.acted_movies %}
+        <div id="acted-tab-pane" class="filmography-tab-pane {% if not is_director or not person.directed_movies %}active{% endif %}" role="tabpanel">
+            <div class="movies-catalog-grid">
+                {% for m in person.acted_movies %}
+                <div class="movie-catalog-card">
+                    <div class="card-poster-wrapper">
+                        {% if m.poster_url %}
+                            <img src="{{ m.poster_url }}" alt="{{ m.title }}" class="catalog-poster-img" loading="lazy">
+                        {% else %}
+                            <div class="catalog-poster-placeholder">
+                                <i class="fa-solid fa-film"></i>
+                                <span>{{ t.no_poster }}</span>
+                            </div>
+                        {% endif %}
+
+                        <div class="card-rating-badge">
+                            ⭐ {{ m.rating }}
+                        </div>
+
+                        {% if m.year and m.year != 'N/A' %}
+                        <div class="card-year-badge">
+                            {{ m.year }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-info-content">
+                        {% if m.character %}
+                        <span class="role-badge actor-role-badge" title="{{ m.character }}">
+                            <i class="fa-solid fa-user-tag"></i> {{ t.as_character }} {{ m.character }}
+                        </span>
+                        {% endif %}
+
+                        <h3 class="card-movie-title" title="{{ m.title }}">
+                            {{ m.title }}
+                        </h3>
+
+                        {% if m.overview %}
+                        <p class="card-movie-overview">
+                            {{ m.overview }}
+                        </p>
+                        {% endif %}
+
+                        <div class="card-action-box">
+                            <a href="{{ url_for('movie_detail', movie_id=m.id) }}" class="card-view-btn">
+                                <span>{{ t.view_details_btn }}</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if not person.directed_movies and not person.acted_movies %}
+        <div class="no-results-box" style="text-align: center; padding: 3rem 1.5rem; background: var(--card-bg, #1a1f2c); border-radius: 16px; border: 1px solid var(--border-color, #2d3748);">
+            <i class="fa-solid fa-film-slash" style="font-size: 2.5rem; color: #94a3b8; margin-bottom: 1rem;"></i>
+            <p>{{ t.no_movies_found }}</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabBtns = document.querySelectorAll('.filmography-tab-btn');
+    const tabPanes = document.querySelectorAll('.filmography-tab-pane');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-tab');
+            
+            tabBtns.forEach(b => {
+                b.classList.remove('active');
+                b.setAttribute('aria-selected', 'false');
+            });
+            tabPanes.forEach(p => p.classList.remove('active'));
+
+            this.classList.add('active');
+            this.setAttribute('aria-selected', 'true');
+            const targetPane = document.getElementById(targetId);
+            if (targetPane) {
+                targetPane.classList.add('active');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

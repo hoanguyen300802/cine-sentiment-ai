@@ -1,40 +1,82 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t.people_title }} | {{ t.app_name }}{% endblock %}
+{% block title %}{% if search_query %}{{ search_query }} - {{ t.people_title }}{% else %}{{ t.people_title }}{% endif %} | {{ t.app_name }}{% endblock %}
 
 {% block content %}
-<div class="results-header-section">
-    <a href="{{ url_for('index') }}" class="back-link-btn">
-        <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_search }}
-    </a>
+<div class="results-header-section people-header-section">
+    <div class="header-action-row">
+        <a href="{{ url_for('index') }}" class="back-link-btn">
+            <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_search }}
+        </a>
+
+        <!-- Search Bar at Header Top-Right -->
+        <form action="{{ url_for('people') }}" method="GET" class="people-search-bar-form">
+            <div class="people-search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input 
+                    type="text" 
+                    name="q" 
+                    value="{{ search_query or '' }}" 
+                    placeholder="{{ t.search_people_placeholder }}" 
+                    class="people-search-input"
+                    autocomplete="off"
+                >
+                {% if search_query %}
+                <a href="{{ url_for('people') }}" class="search-clear-btn" title="Clear">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+                {% endif %}
+            </div>
+            <button type="submit" class="people-search-submit-btn">
+                <span>{{ t.search_people_btn }}</span>
+            </button>
+        </form>
+    </div>
 
     <div class="results-title-box">
         <span class="results-category-tag">
             <i class="fa-solid fa-users"></i> {{ t.nav_people }}
         </span>
-        <h1 class="results-main-title">{{ t.people_title }}</h1>
-        <p class="results-count-text">{{ t.people_subtitle }}</p>
+        <h1 class="results-main-title">
+            {% if search_query %}
+                {{ t.search_results_for }} "{{ search_query }}"
+            {% else %}
+                {{ t.people_title }}
+            {% endif %}
+        </h1>
+        <p class="results-count-text">
+            {% if search_query %}
+                {{ pagination.total_results }} {{ t.movies_found }}
+            {% else %}
+                {{ t.people_subtitle }}
+            {% endif %}
+        </p>
     </div>
 </div>
 
+{% if people %}
 <div class="people-grid-container">
     {% for p in people %}
     <div class="person-card">
         <div class="person-avatar-wrapper">
-            {% if p.profile_url %}
-                <img src="{{ p.profile_url }}" alt="{{ p.name }}" class="person-avatar-img" loading="lazy">
-            {% else %}
-                <div class="person-avatar-placeholder">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-            {% endif %}
+            <a href="{{ url_for('person_detail', person_id=p.id) }}" class="person-avatar-link">
+                {% if p.profile_url %}
+                    <img src="{{ p.profile_url }}" alt="{{ p.name }}" class="person-avatar-img" loading="lazy">
+                {% else %}
+                    <div class="person-avatar-placeholder">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                {% endif %}
+            </a>
             <div class="person-popularity-badge">
                 <i class="fa-solid fa-fire"></i> {{ p.popularity }}
             </div>
         </div>
 
         <div class="person-info-content">
-            <h3 class="person-name">{{ p.name }}</h3>
+            <h3 class="person-name">
+                <a href="{{ url_for('person_detail', person_id=p.id) }}">{{ p.name }}</a>
+            </h3>
             <span class="person-dept-tag">{{ p.department }}</span>
 
             {% if p.known_for_titles %}
@@ -44,12 +86,64 @@
             </div>
             {% endif %}
 
-            <a href="https://www.themoviedb.org/person/{{ p.id }}" target="_blank" rel="noopener noreferrer" class="person-view-tmdb-btn">
-                <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                <span>{{ t.view_tmdb }}</span>
-            </a>
+            <div class="person-card-actions">
+                <a href="{{ url_for('person_detail', person_id=p.id) }}" class="person-view-onsite-btn">
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span>{{ t.view_person_details }}</span>
+                </a>
+            </div>
         </div>
     </div>
     {% endfor %}
 </div>
+
+<!-- Pagination Controls -->
+{% if pagination and pagination.total_pages > 1 %}
+<div class="pagination-container">
+    {% if pagination.page > 1 %}
+    <a href="{{ pagination.base_url }}{% if '?' in pagination.base_url %}&{% else %}?{% endif %}page={{ pagination.page - 1 }}" class="pagination-btn prev-btn">
+        <i class="fa-solid fa-chevron-left"></i>
+        <span>{{ t.previous }}</span>
+    </a>
+    {% else %}
+    <span class="pagination-btn disabled">
+        <i class="fa-solid fa-chevron-left"></i>
+        <span>{{ t.previous }}</span>
+    </span>
+    {% endif %}
+
+    <div class="pagination-info-badge">
+        <span>{{ t.page }} <strong>{{ pagination.page }}</strong> {{ t.of }} <strong>{{ pagination.total_pages }}</strong></span>
+    </div>
+
+    {% if pagination.page < pagination.total_pages %}
+    <a href="{{ pagination.base_url }}{% if '?' in pagination.base_url %}&{% else %}?{% endif %}page={{ pagination.page + 1 }}" class="pagination-btn next-btn">
+        <span>{{ t.next }}</span>
+        <i class="fa-solid fa-chevron-right"></i>
+    </a>
+    {% else %}
+    <span class="pagination-btn disabled">
+        <span>{{ t.next }}</span>
+        <i class="fa-solid fa-chevron-right"></i>
+    </span>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="no-results-box" style="text-align: center; padding: 4rem 1.5rem; background: var(--card-bg, #1a1f2c); border-radius: 16px; border: 1px solid var(--border-color, #2d3748); margin-top: 2rem;">
+    <div style="font-size: 3.5rem; margin-bottom: 1rem; color: #94a3b8;">
+        <i class="fa-solid fa-user-slash"></i>
+    </div>
+    <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;">{{ t.no_people_found }}</h3>
+    <p style="color: var(--text-muted, #94a3b8); max-width: 480px; margin: 0 auto 1.5rem;">
+        {% if search_query %}
+            Không có kết quả nào cho "{{ search_query }}". Vui lòng thử từ khóa khác.
+        {% endif %}
+    </p>
+    <a href="{{ url_for('people') }}" class="back-link-btn" style="display: inline-flex;">
+        <i class="fa-solid fa-rotate-left"></i> Xem tất cả nghệ sĩ phổ biến
+    </a>
+</div>
+{% endif %}
 {% endblock %}

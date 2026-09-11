@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == 'vi' and award.name_vi %}{{ award.name_vi }}{% else %}{{ award.name }}{% endif %} | {{ t.app_name }}
+{% endblock %}
+
+{% block content %}
+<div class="award-detail-page">
+    <!-- Back Navigation -->
+    <div class="results-header-section" style="margin-bottom: 2rem;">
+        <a href="{{ url_for('awards') }}" class="back-link-btn">
+            <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_awards }}
+        </a>
+    </div>
+
+    <!-- Award Hero Banner -->
+    <section class="award-hero-card" style="--award-accent: {{ award.accent_color or '#f59e0b' }};">
+        <div class="award-hero-icon-box">
+            <i class="{{ award.badge_icon or 'fa-solid fa-trophy' }}"></i>
+        </div>
+
+        <div class="award-hero-content">
+            <div class="award-hero-top-badges">
+                <span class="award-hero-country-badge">{{ award.country }}</span>
+                <span class="award-hero-category-badge">{{ award.category | upper }}</span>
+            </div>
+
+            <h1 class="award-hero-title">
+                {% if current_lang == 'vi' and award.name_vi %}{{ award.name_vi }}{% else %}{{ award.name }}{% endif %}
+            </h1>
+
+            <p class="award-hero-org">
+                <i class="fa-solid fa-building-columns"></i> {{ award.organization }}
+            </p>
+
+            <div class="award-hero-meta-chips">
+                <div class="award-hero-chip">
+                    <i class="fa-regular fa-clock"></i>
+                    <span><strong>{{ t.award_founded }}:</strong> {{ award.established_year }}</span>
+                </div>
+
+                <div class="award-hero-chip">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span><strong>{{ t.award_latest }}:</strong> {{ award.latest_ceremony }}</span>
+                </div>
+            </div>
+
+            <div class="award-hero-desc-box">
+                <p class="award-hero-desc">
+                    {% if current_lang == 'vi' and award.description_vi %}{{ award.description_vi }}{% else %}{{ award.description }}{% endif %}
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notable Celebrated Movies Section -->
+    <section class="award-movies-section">
+        <div class="award-movies-header">
+            <div class="section-title-wrapper">
+                <div class="section-badge-pill">
+                    <i class="fa-solid fa-trophy" style="color: #f59e0b;"></i>
+                    <span>Bảng Vàng Tác Phẩm</span>
+                </div>
+                <h2 class="sub-section-heading">{{ t.award_notable_movies }}</h2>
+            </div>
+            <p class="section-subtitle-text">
+                Những kiệt tác điện ảnh tiêu biểu từng đoạt các giải thưởng danh giá nhất và để lại dấu ấn sâu sắc trong lịch sử điện ảnh thế giới.
+            </p>
+        </div>
+
+        {% if award.movies %}
+        <div class="movies-catalog-grid">
+            {% for m in award.movies %}
+            <div class="movie-catalog-card award-card-highlight">
+                <div class="card-poster-wrapper">
+                    {% if m.poster_url %}
+                        <img src="{{ m.poster_url }}" alt="{{ m.title }}" class="catalog-poster-img" loading="lazy">
+                    {% else %}
+                        <div class="catalog-poster-placeholder">
+                            <i class="fa-solid fa-film"></i>
+                            <span>{{ t.no_poster }}</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="card-rating-badge award-rating-badge">
+                        <i class="fa-solid fa-trophy"></i> ⭐ {{ m.rating }}
+                    </div>
+
+                    {% if m.year and m.year != 'N/A' %}
+                    <div class="card-year-badge">
+                        {{ m.year }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-info-content">
+                    <h3 class="card-movie-title" title="{{ m.title }}">
+                        {{ m.title }}
+                    </h3>
+
+                    {% if m.overview %}
+                    <p class="card-movie-overview">
+                        {{ m.overview }}
+                    </p>
+                    {% endif %}
+
+                    <div class="card-action-box">
+                        <a href="{{ url_for('movie_detail', movie_id=m.id) }}" class="card-view-btn">
+                            <span>{{ t.view_details_btn }}</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-results-box" style="text-align: center; padding: 3rem 1.5rem; background: var(--card-bg, #1a1f2c); border-radius: 16px; border: 1px solid var(--border-color, #2d3748);">
+            <i class="fa-solid fa-film-slash" style="font-size: 2.5rem; color: #94a3b8; margin-bottom: 1rem;"></i>
+            <p>{{ t.no_movies_found }}</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

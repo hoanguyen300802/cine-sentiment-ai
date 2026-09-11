@@ -158,7 +158,7 @@
 
     <div class="cast-grid">
         {% for actor in movie_info.cast %}
-        <div class="cast-card">
+        <a href="{{ url_for('person_detail', person_id=actor.id) }}" class="cast-card" title="{{ actor.name }}">
             <div class="cast-avatar-box">
                 {% if actor.profile_url %}
                     <img src="{{ actor.profile_url }}" alt="{{ actor.name }}" class="cast-avatar-img" loading="lazy">
@@ -172,7 +172,7 @@
                 <h4 class="cast-name">{{ actor.name }}</h4>
                 <p class="cast-character">{{ t.as_character }} <span>{{ actor.character }}</span></p>
             </div>
-        </div>
+        </a>
         {% endfor %}
     </div>
 </section>

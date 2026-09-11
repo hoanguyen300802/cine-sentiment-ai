@@ -1,59 +1,122 @@
 {% extends "base.html" %}
 
-{% block title %}{{ t.awards_title }} | {{ t.app_name }}{% endblock %}
+{% block title %}{% if search_query %}{{ search_query }} - {{ t.awards_title }}{% else %}{{ t.awards_title }}{% endif %} | {{ t.app_name }}{% endblock %}
 
 {% block content %}
-<div class="results-header-section">
-    <a href="{{ url_for('index') }}" class="back-link-btn">
-        <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_search }}
-    </a>
+<div class="results-header-section awards-header-section">
+    <div class="header-action-row">
+        <a href="{{ url_for('index') }}" class="back-link-btn">
+            <i class="fa-solid fa-arrow-left"></i> {{ t.back_to_search }}
+        </a>
+
+        <!-- Search Bar at Header Top-Right -->
+        <form action="{{ url_for('awards') }}" method="GET" class="people-search-bar-form awards-search-bar-form">
+            {% if active_category and active_category != 'all' %}
+                <input type="hidden" name="category" value="{{ active_category }}">
+            {% endif %}
+            <div class="people-search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input 
+                    type="text" 
+                    name="q" 
+                    value="{{ search_query or '' }}" 
+                    placeholder="{{ t.search_awards_placeholder }}" 
+                    class="people-search-input"
+                    autocomplete="off"
+                >
+                {% if search_query %}
+                <a href="{{ url_for('awards', category=active_category) }}" class="search-clear-btn" title="Clear">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+                {% endif %}
+            </div>
+            <button type="submit" class="people-search-submit-btn">
+                <span>{{ t.search_awards_btn }}</span>
+            </button>
+        </form>
+    </div>
 
     <div class="results-title-box">
         <span class="results-category-tag awards-tag">
             <i class="fa-solid fa-trophy"></i> {{ t.nav_awards }}
         </span>
-        <h1 class="results-main-title">{{ t.awards_title }}</h1>
-        <p class="results-count-text">{{ t.awards_subtitle }}</p>
+        <h1 class="results-main-title">
+            {% if search_query %}
+                {{ t.search_results_for }} "{{ search_query }}"
+            {% else %}
+                {{ t.awards_title }}
+            {% endif %}
+        </h1>
+        <p class="results-count-text">
+            {% if search_query %}
+                {{ awards|length }} {{ t.movies_found }}
+            {% else %}
+                {{ t.awards_subtitle }}
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Category Filter Tabs -->
+    <div class="awards-category-pills">
+        <a href="{{ url_for('awards', category='all', q=search_query) }}" class="award-cat-pill {% if not active_category or active_category == 'all' %}active{% endif %}">
+            <i class="fa-solid fa-border-all"></i>
+            <span>{{ t.all_awards }}</span>
+        </a>
+        <a href="{{ url_for('awards', category='film', q=search_query) }}" class="award-cat-pill {% if active_category == 'film' %}active{% endif %}">
+            <i class="fa-solid fa-film"></i>
+            <span>{{ t.filter_film }}</span>
+        </a>
+        <a href="{{ url_for('awards', category='festival', q=search_query) }}" class="award-cat-pill {% if active_category == 'festival' %}active{% endif %}">
+            <i class="fa-solid fa-crown"></i>
+            <span>{{ t.filter_festival }}</span>
+        </a>
+        <a href="{{ url_for('awards', category='tv', q=search_query) }}" class="award-cat-pill {% if active_category == 'tv' %}active{% endif %}">
+            <i class="fa-solid fa-tv"></i>
+            <span>{{ t.filter_tv }}</span>
+        </a>
     </div>
 </div>
 
-<!-- Hall of Fame Movies Grid -->
-<div class="movies-catalog-grid">
-    {% for m in movies %}
-    <div class="movie-catalog-card award-card-highlight">
-        <div class="card-poster-wrapper">
-            {% if m.poster_url %}
-                <img src="{{ m.poster_url }}" alt="{{ m.title }}" class="catalog-poster-img" loading="lazy">
-            {% else %}
-                <div class="catalog-poster-placeholder">
-                    <i class="fa-solid fa-film"></i>
-                    <span>{{ t.no_poster }}</span>
-                </div>
-            {% endif %}
-            
-            <div class="card-rating-badge award-rating-badge">
-                <i class="fa-solid fa-trophy"></i> ⭐ {{ m.rating }}
+<!-- Awards Catalog Directory Grid -->
+{% if awards %}
+<div class="awards-catalog-grid">
+    {% for a in awards %}
+    <div class="award-card-item">
+        <div class="award-card-top" style="--award-accent: {{ a.accent_color or '#f59e0b' }};">
+            <div class="award-icon-badge">
+                <i class="{{ a.badge_icon or 'fa-solid fa-trophy' }}"></i>
             </div>
-
-            {% if m.year and m.year != 'N/A' %}
-                <div class="card-year-badge">
-                    {{ m.year }}
-                </div>
-            {% endif %}
+            <div class="award-meta-header">
+                <span class="award-country-badge">{{ a.country }}</span>
+                <span class="award-year-tag"><i class="fa-regular fa-clock"></i> {{ a.established_year }}</span>
+            </div>
         </div>
 
-        <div class="card-info-content">
-            <h3 class="card-movie-title" title="{{ m.title }}">
-                {{ m.title }}
+        <div class="award-card-body">
+            <h3 class="award-card-title">
+                <a href="{{ url_for('award_detail', slug=a.slug) }}">
+                    {% if current_lang == 'vi' and a.name_vi %}{{ a.name_vi }}{% else %}{{ a.name }}{% endif %}
+                </a>
             </h3>
-            
-            <p class="card-movie-overview">
-                {{ m.overview }}
+
+            <p class="award-card-org">
+                <i class="fa-solid fa-building-columns"></i> {{ a.organization }}
             </p>
 
-            <div class="card-action-box">
-                <a href="{{ url_for('movie_detail', movie_id=m.id) }}" class="card-view-btn">
-                    <span>{{ t.view_details_btn }}</span>
+            <p class="award-card-desc">
+                {% if current_lang == 'vi' and a.description_vi %}{{ a.description_vi }}{% else %}{{ a.description }}{% endif %}
+            </p>
+
+            <div class="award-card-details-meta">
+                <div class="award-meta-row">
+                    <span class="meta-label"><i class="fa-solid fa-calendar-check"></i> {{ t.award_latest }}:</span>
+                    <span class="meta-val">{{ a.latest_ceremony }}</span>
+                </div>
+            </div>
+
+            <div class="award-card-action">
+                <a href="{{ url_for('award_detail', slug=a.slug) }}" class="award-view-btn">
+                    <span>{{ t.view_award_details }}</span>
                     <i class="fa-solid fa-arrow-right"></i>
                 </a>
             </div>
@@ -61,4 +124,20 @@
     </div>
     {% endfor %}
 </div>
+{% else %}
+<div class="no-results-box" style="text-align: center; padding: 4rem 1.5rem; background: var(--card-bg, #1a1f2c); border-radius: 16px; border: 1px solid var(--border-color, #2d3748); margin-top: 2rem;">
+    <div style="font-size: 3.5rem; margin-bottom: 1rem; color: #94a3b8;">
+        <i class="fa-solid fa-trophy"></i>
+    </div>
+    <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;">{{ t.no_awards_found }}</h3>
+    <p style="color: var(--text-muted, #94a3b8); max-width: 480px; margin: 0 auto 1.5rem;">
+        {% if search_query %}
+            Không có giải thưởng nào khớp với từ khóa "{{ search_query }}".
+        {% endif %}
+    </p>
+    <a href="{{ url_for('awards') }}" class="back-link-btn" style="display: inline-flex;">
+        <i class="fa-solid fa-rotate-left"></i> Xem tất cả bảng vàng giải thưởng
+    </a>
+</div>
+{% endif %}
 {% endblock %}

@@ -21,11 +21,15 @@ from app.api_config import (
     get_movies_by_category_paginated,
     get_popular_movies,
     get_popular_people,
+    search_people,
+    get_person_details,
+    get_award_by_slug,
     get_movie_details_by_id,
     get_similar_movies,
     get_movie_reviews_tmdb,
     get_movie_info
 )
+from app.awards_data import get_all_awards
 from app.sentiment_analysis import analyze_sentiment
 from app.translations import SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE, get_translations, get_tmdb_language
 
@@ -126,27 +130,86 @@ def movie_category(category):
 @app.route('/people')
 def people():
     """
-    Displays the Popular People (Actors, Directors, Celebrities) page.
+    Displays the Popular People (Actors, Directors, Filmmakers) page
+    with integrated real-time search and pagination.
     """
     current_lang = session.get('lang', DEFAULT_LANGUAGE)
     tmdb_lang = get_tmdb_language(current_lang)
 
-    people_list = get_popular_people(language=tmdb_lang)
+    q = request.args.get('q', '').strip()
+    page = request.args.get('page', 1, type=int)
+    if page < 1:
+        page = 1
 
-    return render_template('people.html', people=people_list)
+    if q:
+        data = search_people(query=q, language=tmdb_lang, page=page)
+        base_url = url_for('people', q=q)
+    else:
+        data = get_popular_people(language=tmdb_lang, page=page, return_meta=True)
+        base_url = url_for('people')
+
+    people_list = data.get('people', [])
+    pagination = {
+        'page': data.get('page', 1),
+        'total_pages': data.get('total_pages', 1),
+        'total_results': data.get('total_results', len(people_list)),
+        'base_url': base_url
+    }
+
+    return render_template('people.html', people=people_list, search_query=q, pagination=pagination)
+
+
+@app.route('/person/<int:person_id>')
+def person_detail(person_id):
+    """
+    Displays comprehensive details for an actor or director on-site,
+    including biography, personal details, directed movies, and acting roles.
+    """
+    current_lang = session.get('lang', DEFAULT_LANGUAGE)
+    tmdb_lang = get_tmdb_language(current_lang)
+
+    person = get_person_details(person_id, language=tmdb_lang)
+    if not person:
+        return render_template('error.html', error_type='not_found', query=f'Person #{person_id}')
+
+    return render_template('person_detail.html', person=person)
 
 
 @app.route('/awards')
 def awards():
     """
-    Displays the Awards & Masterpieces Hall of Fame page.
+    Displays the Awards & Masterpieces Hall of Fame directory
+    with category filters and live keyword search.
+    """
+    q = request.args.get('q', '').strip()
+    category = request.args.get('category', 'all').strip().lower()
+    sort = request.args.get('sort', 'popular').strip().lower()
+
+    awards_list = get_all_awards(category=category, query=q, sort=sort)
+
+    return render_template(
+        'awards.html',
+        awards=awards_list,
+        active_category=category,
+        search_query=q,
+        active_sort=sort
+    )
+
+
+@app.route('/award/<string:slug>')
+def award_detail(slug):
+    """
+    Displays dedicated award details on-site with celebrated winning/nominated
+    masterpiece movies fetched directly from TMDb.
     """
     current_lang = session.get('lang', DEFAULT_LANGUAGE)
     tmdb_lang = get_tmdb_language(current_lang)
 
-    top_movies = get_movies_by_category('top_rated', language=tmdb_lang)
+    award = get_award_by_slug(slug, language=tmdb_lang)
+    if not award:
+        return render_template('error.html', error_type='not_found', query=f'Award: {slug}')
 
-    return render_template('awards.html', movies=top_movies)
+    return render_template('award_detail.html', award=award)
 
 
 @app.route('/search', methods=['GET', 'POST'])

@@ -220,7 +220,7 @@ def get_popular_movies(language='en-US', page=1):
     return get_movies_by_category('popular', language=language, page=page)[:12]
 
 
-def get_popular_people(language='en-US', page=1):
+def get_popular_people(language='en-US', page=1, return_meta=False):
     """
     Fetch list of popular actors and directors from TMDb.
     """
@@ -235,9 +235,13 @@ def get_popular_people(language='en-US', page=1):
     try:
         resp = requests.get(url, params=params, timeout=8)
         if resp.status_code != 200:
-            return []
+            return {'people': [], 'page': page, 'total_pages': 1, 'total_results': 0} if return_meta else []
 
-        raw_people = resp.json().get('results', [])
+        data = resp.json()
+        raw_people = data.get('results', [])
+        total_pages = min(data.get('total_pages', 1), 50)
+        total_results = data.get('total_results', len(raw_people))
+
         people = []
         for p in raw_people:
             profile_path = p.get('profile_path')
@@ -256,9 +260,181 @@ def get_popular_people(language='en-US', page=1):
                 'profile_url': f'{PROFILE_BASE_URL}{profile_path}' if profile_path else None,
                 'known_for_titles': known_titles[:3]
             })
+
+        if return_meta:
+            return {
+                'people': people,
+                'page': page,
+                'total_pages': total_pages,
+                'total_results': total_results
+            }
         return people
     except Exception:
-        return []
+        return {'people': [], 'page': page, 'total_pages': 1, 'total_results': 0} if return_meta else []
+
+
+def search_people(query, language='en-US', page=1):
+    """
+    Search actors, directors, and filmmakers on TMDb by keyword with pagination.
+    """
+    if not query:
+        return {'people': [], 'page': 1, 'total_pages': 1, 'total_results': 0}
+
+    api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
+    url = f'{BASE_URL}/search/person'
+    params = {
+        'api_key': api_key,
+        'query': query,
+        'language': language,
+        'page': page,
+        'include_adult': 'false'
+    }
+
+    try:
+        resp = requests.get(url, params=params, timeout=8)
+        if resp.status_code != 200:
+            return {'people': [], 'page': page, 'total_pages': 1, 'total_results': 0}
+
+        data = resp.json()
+        raw_people = data.get('results', [])
+        total_pages = min(data.get('total_pages', 1), 50)
+        total_results = data.get('total_results', len(raw_people))
+
+        people = []
+        for p in raw_people:
+            profile_path = p.get('profile_path')
+            known_for_raw = p.get('known_for', [])
+            known_titles = []
+            for k in known_for_raw:
+                title = k.get('title') or k.get('name')
+                if title:
+                    known_titles.append(title)
+
+            people.append({
+                'id': p.get('id'),
+                'name': p.get('name', 'Unknown Person'),
+                'department': p.get('known_for_department', 'Acting'),
+                'popularity': round(p.get('popularity', 0.0), 1),
+                'profile_url': f'{PROFILE_BASE_URL}{profile_path}' if profile_path else None,
+                'known_for_titles': known_titles[:3]
+            })
+
+        return {
+            'people': people,
+            'page': page,
+            'total_pages': total_pages,
+            'total_results': total_results
+        }
+    except Exception:
+        return {'people': [], 'page': page, 'total_pages': 1, 'total_results': 0}
+
+
+def get_person_details(person_id, language='en-US'):
+    """
+    Fetches comprehensive person details including biography, birthday,
+    place of birth, department, directed movies, and acted roles.
+    """
+    if not person_id:
+        return None
+
+    api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
+    url = f'{BASE_URL}/person/{person_id}'
+    params = {
+        'api_key': api_key,
+        'language': language,
+        'append_to_response': 'movie_credits'
+    }
+
+    try:
+        resp = requests.get(url, params=params, timeout=8)
+        if resp.status_code != 200:
+            return None
+
+        p = resp.json()
+        biography = p.get('biography') or ''
+
+        # If biography is empty in localized language, try English fallback
+        if not biography.strip() and language != 'en-US':
+            try:
+                en_resp = requests.get(url, params={'api_key': api_key, 'language': 'en-US'}, timeout=5)
+                if en_resp.status_code == 200:
+                    biography = en_resp.json().get('biography') or ''
+            except Exception:
+                pass
+
+        profile_path = p.get('profile_path')
+        credits = p.get('movie_credits', {})
+
+        # Parse directed movies (crew where job == 'Director')
+        raw_crew = credits.get('crew', [])
+        directed_dict = {}
+        for m in raw_crew:
+            if m.get('job') == 'Director':
+                m_id = m.get('id')
+                if m_id not in directed_dict:
+                    poster_path = m.get('poster_path')
+                    directed_dict[m_id] = {
+                        'id': m_id,
+                        'title': m.get('title') or m.get('original_title', 'Unknown'),
+                        'release_date': m.get('release_date') or 'N/A',
+                        'year': (m.get('release_date') or '')[:4] or 'N/A',
+                        'rating': round(m.get('vote_average', 0.0), 1),
+                        'vote_count': m.get('vote_count', 0),
+                        'popularity': round(m.get('popularity', 0.0), 1),
+                        'poster_url': f'{IMAGE_BASE_URL}{poster_path}' if poster_path else None,
+                        'overview': m.get('overview') or '',
+                        'job': 'Director'
+                    }
+
+        directed_movies = sorted(
+            directed_dict.values(),
+            key=lambda x: (x.get('popularity', 0), x.get('vote_count', 0)),
+            reverse=True
+        )
+
+        # Parse acted movies (cast)
+        raw_cast = credits.get('cast', [])
+        acted_dict = {}
+        for m in raw_cast:
+            m_id = m.get('id')
+            if m_id not in acted_dict:
+                poster_path = m.get('poster_path')
+                acted_dict[m_id] = {
+                    'id': m_id,
+                    'title': m.get('title') or m.get('original_title', 'Unknown'),
+                    'character': m.get('character') or '',
+                    'release_date': m.get('release_date') or 'N/A',
+                    'year': (m.get('release_date') or '')[:4] or 'N/A',
+                    'rating': round(m.get('vote_average', 0.0), 1),
+                    'vote_count': m.get('vote_count', 0),
+                    'popularity': round(m.get('popularity', 0.0), 1),
+                    'poster_url': f'{IMAGE_BASE_URL}{poster_path}' if poster_path else None,
+                    'overview': m.get('overview') or ''
+                }
+
+        acted_movies = sorted(
+            acted_dict.values(),
+            key=lambda x: (x.get('popularity', 0), x.get('vote_count', 0)),
+            reverse=True
+        )
+
+        return {
+            'id': p.get('id'),
+            'name': p.get('name') or 'Unknown Person',
+            'biography': biography,
+            'birthday': p.get('birthday'),
+            'deathday': p.get('deathday'),
+            'place_of_birth': p.get('place_of_birth'),
+            'department': p.get('known_for_department', 'Acting'),
+            'popularity': round(p.get('popularity', 0.0), 1),
+            'profile_url': f'{PROFILE_BASE_URL}{profile_path}' if profile_path else None,
+            'directed_movies': directed_movies,
+            'acted_movies': acted_movies,
+            'tmdb_url': f'https://www.themoviedb.org/person/{person_id}'
+        }
+    except Exception:
+        return None
+
 
 
 def get_movie_details_by_id(movie_id, language='en-US'):
@@ -553,3 +729,56 @@ def get_movie_reviews_tmdb(movie_id, language='en-US', limit=4):
     except Exception:
         pass
     return []
+
+
+def get_movie_card(movie_id, language='en-US'):
+    """
+    Lightweight fetch of basic movie card metadata (title, poster, rating, year, overview).
+    """
+    if not movie_id:
+        return None
+
+    api_key = os.getenv('TMDB_API_KEY', DEFAULT_API_KEY)
+    try:
+        url = f'{BASE_URL}/movie/{movie_id}'
+        resp = requests.get(url, params={'api_key': api_key, 'language': language}, timeout=6)
+        if resp.status_code == 200:
+            m = resp.json()
+            poster_path = m.get('poster_path')
+            backdrop_path = m.get('backdrop_path')
+            return {
+                'id': m.get('id'),
+                'title': m.get('title') or m.get('original_title', 'Unknown'),
+                'overview': m.get('overview') or '',
+                'release_date': m.get('release_date') or 'N/A',
+                'year': (m.get('release_date') or '')[:4] or 'N/A',
+                'rating': round(m.get('vote_average', 0.0), 1),
+                'vote_count': m.get('vote_count', 0),
+                'poster_url': f'{IMAGE_BASE_URL}{poster_path}' if poster_path else None,
+                'backdrop_url': f'{BACKDROP_BASE_URL}{backdrop_path}' if backdrop_path else None,
+            }
+    except Exception:
+        pass
+    return None
+
+
+def get_award_by_slug(slug, language='en-US'):
+    """
+    Retrieves award details from AWARDS_CATALOG and fetches live TMDb data
+    for celebrated winning/nominated movies.
+    """
+    from app.awards_data import get_award_by_slug_data
+    award = get_award_by_slug_data(slug)
+    if not award:
+        return None
+
+    award_data = dict(award)
+    movie_ids = award.get('notable_movie_ids', [])
+    movies = []
+    for m_id in movie_ids:
+        card = get_movie_card(m_id, language=language)
+        if card:
+            movies.append(card)
+
+    award_data['movies'] = movies
+    return award_data
